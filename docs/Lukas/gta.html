@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA 5 Realistic Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        .game-container {
+            max-width: 700px;
+            margin: auto;
+            background-color: #222;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.5);
+        }
+        button {
+            background-color: #ff0000;
+            color: white;
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>🔥 GTA 5 Realistic Simulator 🔥</h1>
+    <p><strong>Money:</strong> $<span id="money">5000</span></p>
+    <p><strong>Health:</strong> <span id="health">100</span>%</p>
+    <p><strong>Hunger:</strong> <span id="hunger">0</span>%</p>
+    <p><strong>Wanted Level:</strong> <span id="wanted">0</span> ★</p>
+    <p><strong>Properties:</strong> <span id="properties">None</span></p>
+    <p><strong>Vehicles:</strong> <span id="vehicles">None</span></p>
+    <p><strong>Reputation:</strong> <span id="reputation">0</span></p>
+
+    <h2>💰 Money & Crime</h2>
+    <button onclick="earnMoney()">💼 Do a Job ($500-$3000)</button>
+    <button onclick="robStore()">🔫 Rob a Store ($1000-$5000, Risky)</button>
+    <button onclick="heist()">💰 Plan a Heist ($10,000+, Extreme Risk)</button>
+    <button onclick="dealDrugs()">💊 Sell Drugs ($5000 Profit, 30% Police Risk)</button>
+
+    <h2>🚗 Vehicles & Life</h2>
+    <button onclick="buyCar()">🚘 Buy a Car ($15,000)</button>
+    <button onclick="stealCar()">🚗 Steal a Car (Risky, +Wanted Level)</button>
+    <button onclick="eatFood()">🍔 Eat Food (-Hunger, +Health)</button>
+    <button onclick="train()">🏋️ Gym (+Health, +Reputation)</button>
+
+    <h2>🚔 Police & Escapes</h2>
+    <button onclick="bribePolice()">💵 Bribe Police (-1★, $5000)</button>
+    <button onclick="escapePolice()">🏃‍♂️ Escape Police (50% Success, -1★)</button>
+    <button onclick="goToJail()">⛓️ Surrender (Lose $5000, Reset Wanted)</button>
+
+    <h2>🔄 Random Events</h2>
+    <p id="eventMessage">Nothing happened yet.</p>
+</div>
+
+<script>
+    let money = 5000;
+    let health = 100;
+    let hunger = 0;
+    let wantedLevel = 0;
+    let properties = [];
+    let vehicles = [];
+    let reputation = 0;
+
+    function updateUI() {
+        document.getElementById("money").innerText = money;
+        document.getElementById("health").innerText = health;
+        document.getElementById("hunger").innerText = hunger;
+        document.getElementById("wanted").innerText = wantedLevel;
+        document.getElementById("properties").innerText = properties.length > 0 ? properties.join(", ") : "None";
+        document.getElementById("vehicles").innerText = vehicles.length > 0 ? vehicles.join(", ") : "None";
+        document.getElementById("reputation").innerText = reputation;
+    }
+
+    function earnMoney() {
+        let earned = Math.floor(Math.random() * 2500) + 500;
+        money += earned;
+        document.getElementById("eventMessage").innerText = `You worked and earned $${earned}!`;
+        updateUI();
+    }
+
+    function robStore() {
+        let success = Math.random() < 0.5;
+        if (success) {
+            let stolen = Math.floor(Math.random() * 4000) + 1000;
+            money += stolen;
+            wantedLevel++;
+            document.getElementById("eventMessage").innerText = `Robbery successful! You stole $${stolen} but police are after you!`;
+        } else {
+            wantedLevel += 2;
+            document.getElementById("eventMessage").innerText = "Robbery failed! Police are chasing you!";
+        }
+        updateUI();
+    }
+
+    function heist() {
+        let success = Math.random() < 0.3;
+        if (success) {
+            let stolen = Math.floor(Math.random() * 25000) + 10000;
+            money += stolen;
+            wantedLevel += 3;
+            reputation += 10;
+            document.getElementById("eventMessage").innerText = `Heist successful! You got $${stolen}!`;
+        } else {
+            wantedLevel += 4;
+            health -= 30;
+            document.getElementById("eventMessage").innerText = "Heist failed! You got shot and the police are after you!";
+        }
+        updateUI();
+    }
+
+    function dealDrugs() {
+        let success = Math.random() < 0.7;
+        if (success) {
+            money += 5000;
+            reputation += 5;
+            document.getElementById("eventMessage").innerText = "Drug deal successful! You made $5000!";
+        } else {
+            wantedLevel += 3;
+            document.getElementById("eventMessage").innerText = "Drug deal busted! Police are after you!";
+        }
+        updateUI();
+    }
+
+    function buyCar() {
+        if (money >= 15000) {
+            money -= 15000;
+            vehicles.push("Sports Car");
+            document.getElementById("eventMessage").innerText = "You bought a sports car!";
+        } else {
+            document.getElementById("eventMessage").innerText = "Not enough money!";
+        }
+        updateUI();
+    }
+
+    function stealCar() {
+        let success = Math.random() < 0.5;
+        if (success) {
+            vehicles.push("Stolen Car");
+            wantedLevel++;
+            document.getElementById("eventMessage").innerText = "You stole a car!";
+        } else {
+            wantedLevel += 2;
+            document.getElementById("eventMessage").innerText = "Car theft failed! Police are chasing you!";
+        }
+        updateUI();
+    }
+
+    function bribePolice() {
+        if (money >= 5000 && wantedLevel > 0) {
+            money -= 5000;
+            wantedLevel--;
+            document.getElementById("eventMessage").innerText = "You bribed the police and lowered your wanted level!";
+        }
+        updateUI();
+    }
+
+    function escapePolice() {
+        if (wantedLevel > 0 && Math.random() < 0.5) {
+            wantedLevel--;
+            document.getElementById("eventMessage").innerText = "You successfully escaped the police!";
+        }
+        updateUI();
+    }
+</script>
+
+</body>
+</html>
