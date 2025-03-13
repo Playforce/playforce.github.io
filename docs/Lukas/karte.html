@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMEX Gold Card</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&family=Playfair+Display:wght@700&display=swap');
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            width: 340px;
+            height: 215px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #e6c76c, #d4af37);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: black;
+            font-weight: bold;
+            border: 1px solid #b8860b;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .chip {
+            width: 50px;
+            height: 35px;
+            background: linear-gradient(45deg, #c1a45c, #f2e1b3);
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-number {
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-align: center;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        .card-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .card-holder {
+            font-size: 14px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Konto-Blöcke */
+        .account-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            width: 340px;
+        }
+
+        .account-box {
+            width: 160px;
+            height: 80px;
+            background: #222;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .account-box:hover {
+            background: #444;
+        }
+
+        #balance {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e6c76c;
+        }
+
+        /* Währungs-Container */
+        .currency-container {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        select {
+            padding: 5px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #e6c76c;
+            background: #222;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="card-header">
+        <div class="chip"></div>
+        <div>AMERICAN EXPRESS</div>
+    </div>
+    <div class="card-number">3742 123456 78901</div>
+    <div class="card-details">
+        <div>MEMBER SINCE <br> <strong>22</strong></div>
+        <div class="card-holder">LUKAS</div>
+        <div>VALID THRU <br> <strong>03/30</strong></div>
+    </div>
+</div>
+
+<div id="balance">Guthaben: 1.000.000€</div>
+
+<div class="account-container">
+    <div class="account-box" onclick="depositMoney()">💰 Einzahlen</div>
+    <div class="account-box" onclick="withdrawMoney()">💸 Auszahlen</div>
+</div>
+
+<!-- Währungswechsel -->
+<div class="currency-container">
+    <label for="currency">Währung:</label>
+    <select id="currency" onchange="changeCurrency()">
+        <option value="EUR" selected>Euro (€)</option>
+        <option value="USD">US-Dollar ($)</option>
+        <option value="GBP">Britisches Pfund (£)</option>
+        <option value="CHF">Schweizer Franken (CHF)</option>
+        <option value="JPY">Japanischer Yen (¥)</option>
+        <option value="CNY">Chinesischer Yuan (¥)</option>
+        <option value="RUB">Russischer Rubel (₽)</option>
+        <option value="CAD">Kanadischer Dollar (C$)</option>
+        <option value="AUD">Australischer Dollar (A$)</option>
+        <option value="INR">Indische Rupie (₹)</option>
+    </select>
+</div>
+
+<script>
+    let balance = 1000000; // Start-Guthaben
+    let exchangeRates = {
+        "EUR": 1,       // Basiswährung
+        "USD": 1.08,    // 1 EUR = 1.08 USD
+        "GBP": 0.85,    // 1 EUR = 0.85 GBP
+        "CHF": 0.96,    // 1 EUR = 0.96 CHF
+        "JPY": 161.7,   // 1 EUR = 161.7 JPY
+        "CNY": 7.82,    // 1 EUR = 7.82 CNY
+        "RUB": 96.2,    // 1 EUR = 96.2 RUB
+        "CAD": 1.46,    // 1 EUR = 1.46 CAD
+        "AUD": 1.64,    // 1 EUR = 1.64 AUD
+        "INR": 90.1     // 1 EUR = 90.1 INR
+    };
+
+    function updateBalanceDisplay() {
+        let currency = document.getElementById("currency").value;
+        let convertedBalance = (balance * exchangeRates[currency]).toLocaleString();
+        document.getElementById("balance").innerText = `Guthaben: ${convertedBalance} ${currency}`;
+    }
+
+    function changeCurrency() {
+        updateBalanceDisplay();
+    }
+
+    function depositMoney() {
+        let amount = parseFloat(prompt("Wie viel möchten Sie einzahlen?"));
+        if (!isNaN(amount) && amount > 0) {
+            balance += amount;
+            updateBalanceDisplay();
+            alert(`Sie haben ${amount.toLocaleString()}€ eingezahlt.`);
+        }
+    }
+
+    function withdrawMoney() {
+        let amount = parseFloat(prompt("Wie viel möchten Sie auszahlen?"));
+        if (!isNaN(amount) && amount > 0 && amount <= balance) {
+            balance -= amount;
+            updateBalanceDisplay();
+            alert(`Sie haben ${amount.toLocaleString()}€ ausgezahlt.`);
+        }
+    }
+</script>
+
+</body>
+</html>
