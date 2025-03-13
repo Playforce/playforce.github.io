@@ -1,0 +1,59 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: black; /* Gray background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Navigation Bar */
+.navbar {
+    text-align: center;
+    width: 100%;
+}
+
+/* Button Style Links */
+.nav-links {
+    list-style: none;
+    padding: 0;
+}
+
+.nav-links li {
+    margin: 10px 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    background-color: #808080; /* Blue Button */
+
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+    color: black;
+    box-shadow: 0 4px 8px rgba(255, 0, 0, 0.5);
+}
+
+.nav-links a:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Responsive Design */
+@media (min-width: 600px) {
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .nav-links li {
+        margin: 0;
+    }
+}
