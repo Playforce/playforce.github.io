@@ -38,12 +38,21 @@ body {
     font-weight: bold;
     transition: 0.3s;
     color: black;
-    box-shadow: 0 4px 8px rgba(255, 0, 0, 0.5);
 }
 
 .nav-links a:hover {
     background-color: #0056b3; /* Darker blue on hover */
 }
+
+.lukas {
+    border: solid blue 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 255, 1);
+    }
+    
+.silvan {
+    border: solid lightgreen 3px;
+    box-shadow: 0 4px 8px rgba(0, 255, 0, 1);
+    }
 
 /* Responsive Design */
 @media (min-width: 600px) {
