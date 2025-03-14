@@ -40,19 +40,23 @@ body {
     color: black;
 }
 
-.nav-links a:hover {
-    background-color: #0056b3; /* Darker blue on hover */
-}
-
 .lukas {
     border: solid blue 3px;
     box-shadow: 0 4px 8px rgba(0, 0, 255, 1);
-    }
+}
+
+.lukas a:hover {
+    background-color: blue; /* Darker blue on hover */
+}
     
 .silvan {
     border: solid lightgreen 3px;
     box-shadow: 0 4px 8px rgba(0, 255, 0, 1);
-    }
+}
+
+.silvan a:hover {
+    background-color: lightblue; /* Darker blue on hover */
+}
 
 /* Responsive Design */
 @media (min-width: 600px) {
