@@ -46,7 +46,7 @@
         const restartButton = document.getElementById("restartButton");
 
         let bird, pipes, score, gameOver, gameStarted, countdown;
-        let pipeWidth = 50, pipeGap = 120, gameSpeed = 2;
+        let pipeWidth = 50, pipeGap = 140, gameSpeed = 2;
 
         function resetGame() {
             bird = { x: 50, y: 150, radius: 15, velocity: 0, gravity: 0.14, jump: -5 };
@@ -86,6 +86,7 @@
             if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
                 gameOver = true;
                 restartButton.style.display = "inline-block";
+                jumpButton.style.display = "none";
                 return;
             }
 
