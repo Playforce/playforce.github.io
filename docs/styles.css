@@ -45,8 +45,8 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 255, 1);
 }
 
-.lukas a:hover {
-    background-color: blue; /* Darker blue on hover */
+.lukas:hover {
+    background-color: blue; 
 }
     
 .silvan {
@@ -54,8 +54,8 @@ body {
     box-shadow: 0 4px 8px rgba(0, 255, 0, 1);
 }
 
-.silvan a:hover {
-    background-color: lightblue; /* Darker blue on hover */
+.silvan:hover {
+    background-color: lightgreen;
 }
 
 /* Responsive Design */
