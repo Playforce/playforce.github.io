@@ -40,6 +40,7 @@
     <h1>🔥 GTA 5 Realistic Simulator 🔥</h1>
     <p><strong>Money:</strong> $<span id="money">5000</span></p>
     <p><strong>Health:</strong> <span id="health">100</span>%</p>
+    <p><strong>Age:</strong> <span id="age">20</span></p>
     <p><strong>Hunger:</strong> <span id="hunger">0</span>%</p>
     <p><strong>Wanted Level:</strong> <span id="wanted">0</span> ★</p>
     <p><strong>Properties:</strong> <span id="properties">None</span></p>
@@ -75,8 +76,10 @@
     let properties = [];
     let vehicles = [];
     let reputation = 0;
+    let age = 20;
 
     function updateUI() {
+    document.getElementById("age").innerText = age;
         document.getElementById("money").innerText = money;
         document.getElementById("health").innerText = health;
         document.getElementById("hunger").innerText = hunger;
@@ -84,12 +87,28 @@
         document.getElementById("properties").innerText = properties.length > 0 ? properties.join(", ") : "None";
         document.getElementById("vehicles").innerText = vehicles.length > 0 ? vehicles.join(", ") : "None";
         document.getElementById("reputation").innerText = reputation;
+
+        if (health <= 0) {
+            gameOver("You died! Game Over.");
+        }
+        
+        if (wantedLevel >= 10) {
+            wantedLevel = 0;
+            age += 10;
+            updateUI();
+        }
+    }
+
+    function gameOver(message) {
+        alert(message);
+        document.body.innerHTML = `<h1 style="color: red;">GAME OVER</h1><p>${message}</p>`;
     }
 
     function earnMoney() {
         let earned = Math.floor(Math.random() * 2500) + 500;
         money += earned;
         document.getElementById("eventMessage").innerText = `You worked and earned $${earned}!`;
+        age += 1;
         updateUI();
     }
 
@@ -157,6 +176,13 @@
             wantedLevel += 2;
             document.getElementById("eventMessage").innerText = "Car theft failed! Police are chasing you!";
         }
+        updateUI();
+    }
+    
+    function goToJail() {
+        money = 0;
+        wantedLevel = 0;
+        health -= 20;
         updateUI();
     }
 
