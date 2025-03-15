@@ -1,216 +1,434 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMEX Gold Card</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&family=Playfair+Display:wght@700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business & Banking Simulator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap');
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+    }
 
-        .card {
-            width: 340px;
-            height: 215px;
-            border-radius: 12px;
-            background: linear-gradient(145deg, #e6c76c, #d4af37);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: black;
-            font-weight: bold;
-            border: 1px solid #b8860b;
-        }
+    .amex-card {
+      width: 320px;
+      height: 204px;
+      border-radius: 12px;
+      background: linear-gradient(145deg, #1c1c1c, #000);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      position: relative;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: 'Playfair Display', serif;
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
+    .chip {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 50px;
+      height: 35px;
+      border-radius: 6px;
+      background: linear-gradient(45deg, #bbb, #ddd);
+    }
 
-        .chip {
-            width: 50px;
-            height: 35px;
-            background: linear-gradient(45deg, #c1a45c, #f2e1b3);
-            border-radius: 5px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
+    .balance {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
 
-        .card-number {
-            font-size: 20px;
-            letter-spacing: 2px;
-            text-align: center;
-            font-family: 'Courier Prime', monospace;
-        }
+    button {
+      background: linear-gradient(145deg, #444, #222);
+      color: white;
+      border: 2px solid white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 5px;
+    }
 
-        .card-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            text-transform: uppercase;
-            font-family: 'Arial', sans-serif;
-        }
+    button:hover {
+      background: linear-gradient(145deg, #666, #333);
+    }
 
-        .card-holder {
-            font-size: 14px;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
+    input {
+      background: black;
+      color: white;
+      border: 2px solid white;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 8px;
+    }
 
-        /* Konto-Blöcke */
-        .account-container {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            width: 340px;
-        }
+    .center-btns {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
 
-        .account-box {
-            width: 160px;
-            height: 80px;
-            background: #222;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.5);
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 14px;
-            font-weight: bold;
-        }
+    .center-btns button {
+      margin: 10px;
+      width: 200px;
+    }
 
-        .account-box:hover {
-            background: #444;
-        }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 999;
+    }
 
-        #balance {
-            margin-top: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #e6c76c;
-        }
+    .content-menu {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20, 20, 20, 0.95);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+      text-align: center;
+      z-index: 1000;
+      min-width: 280px;
+    }
 
-        /* Währungs-Container */
-        .currency-container {
-            margin-top: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    .content-menu h3 {
+      margin-top: 0;
+    }
 
-        select {
-            padding: 5px;
-            font-size: 14px;
-            border-radius: 5px;
-            border: 1px solid #e6c76c;
-            background: #222;
-            color: white;
-        }
-    </style>
+    .close-btn {
+      margin-top: 10px;
+      background: red;
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="card-header">
-        <div class="chip"></div>
-        <div>AMERICAN EXPRESS</div>
-    </div>
-    <div class="card-number">3742 123456 78901</div>
-    <div class="card-details">
-        <div>MEMBER SINCE <br> <strong>22</strong></div>
-        <div class="card-holder">LUKAS</div>
-        <div>VALID THRU <br> <strong>03/30</strong></div>
-    </div>
-</div>
+  <!-- Banking Card -->
+  <div class="amex-card">
+    <div class="chip"></div>
+    <h3>BLACK CARD</h3>
+    <div class="balance">💳 Kontostand: <span id="bank-balance">10000.000</span> €</div>
+  </div>
 
-<div id="balance">Guthaben: 1.000.000€</div>
+  <!-- Main Interface Buttons -->
+  <div class="center-btns">
+    <button onclick="openJobMenu()">💼 Job Center</button>
+    <button onclick="openBankMenu()">🏦 Banking</button>
+    <button onclick="openBuyMenu()">🛒 Buy</button>
+  </div>
 
-<div class="account-container">
-    <div class="account-box" onclick="depositMoney()">💰 Einzahlen</div>
-    <div class="account-box" onclick="withdrawMoney()">💸 Auszahlen</div>
-</div>
+  <!-- Overlay for menus -->
+  <div class="overlay" id="overlay"></div>
 
-<!-- Währungswechsel -->
-<div class="currency-container">
-    <label for="currency">Währung:</label>
-    <select id="currency" onchange="changeCurrency()">
-        <option value="EUR" selected>Euro (€)</option>
-        <option value="USD">US-Dollar ($)</option>
-        <option value="GBP">Britisches Pfund (£)</option>
-        <option value="CHF">Schweizer Franken (CHF)</option>
-        <option value="JPY">Japanischer Yen (¥)</option>
-        <option value="CNY">Chinesischer Yuan (¥)</option>
-        <option value="RUB">Russischer Rubel (₽)</option>
-        <option value="CAD">Kanadischer Dollar (C$)</option>
-        <option value="AUD">Australischer Dollar (A$)</option>
-        <option value="INR">Indische Rupie (₹)</option>
+  <!-- Job Center Menu -->
+  <div class="content-menu" id="jobMenu">
+    <h3>👨‍💻 Wähle einen Job</h3>
+    <button onclick="doJob('Freelancer')">Freelancer (+50€ pro Job)</button>
+    <button onclick="doJob('Uber')">Uber Fahrer (+80€ pro Job)</button>
+    <button onclick="doJob('Designer')">Designer (+100€ pro Job)</button>
+    <button class="close-btn" onclick="closeMenu('jobMenu')">❌ Schließen</button>
+  </div>
+
+  <!-- Banking Menu -->
+  <div class="content-menu" id="bankMenu">
+    <h3>🏦 Dein Bankkonto</h3>
+    <div>💳 Kontostand: <span id="bank-balance-display">10000.000</span> €</div>
+    <div>💵 Bargeld: <span id="cash-display">0.000</span> €</div>
+    <input type="number" id="amount" placeholder="Betrag (€)" min="1">
+    <button onclick="updateBalance(true)">💰 Einzahlen (Cash to Bank)</button>
+    <button onclick="updateBalance(false)">🏦 Auszahlen (Bank to Cash)</button>
+    <button onclick="openCashMenu()">💸 Cash Options</button>
+    <button class="close-btn" onclick="closeMenu('bankMenu')">❌ Schließen</button>
+  </div>
+
+  <!-- Buy Menu (Purchases made from bank account) -->
+  <div class="content-menu" id="buyMenu">
+    <h3>🛒 Kaufen</h3>
+    <button onclick="openDealershipMenu()">🚗 Dealership</button>
+    <button onclick="openStockMarketMenu()">📈 Stock Market</button>
+    <button onclick="openRealEstateMenu()">🏠 Real Estate</button>
+    <button onclick="openBusinessMenu()">🚀 Business Expansion</button>
+    <button class="close-btn" onclick="closeMenu('buyMenu')">❌ Schließen</button>
+  </div>
+
+  <!-- Cash Options Menu (Purchases/mini-games using cash) -->
+  <div class="content-menu" id="cashMenu">
+    <h3>💸 Cash Options</h3>
+    <button onclick="playLottery()">Play Lottery (Kosten: 100 Cash)</button>
+    <button onclick="buyBoost()">Buy Temporary Boost (Kosten: 200 Cash)</button>
+    <button class="close-btn" onclick="closeMenu('cashMenu')">❌ Schließen</button>
+  </div>
+
+  <!-- Dealership Menu -->
+  <div class="content-menu" id="dealershipMenu">
+    <h3>🚗 Dealership - Autos Kaufen</h3>
+    <select id="car-select">
+      <option value="0">Keine Auswahl</option>
+      <option value="150000">Ferrari (+200€ pro Job)</option>
+      <option value="200000">Lamborghini (+250€ pro Job)</option>
+      <option value="500000">Rolls-Royce (+300€ pro Job)</option>
+      <option value="1000000">Bugatti (+500€ pro Job)</option>
     </select>
-</div>
+    <button onclick="buyCar()">✔ Kaufen</button>
+    <button class="close-btn" onclick="closeMenu('dealershipMenu')">❌ Schließen</button>
+  </div>
 
-<script>
-    let balance = 1000000; // Start-Guthaben
-    let exchangeRates = {
-        "EUR": 1,       // Basiswährung
-        "USD": 1.08,    // 1 EUR = 1.08 USD
-        "GBP": 0.85,    // 1 EUR = 0.85 GBP
-        "CHF": 0.96,    // 1 EUR = 0.96 CHF
-        "JPY": 161.7,   // 1 EUR = 161.7 JPY
-        "CNY": 7.82,    // 1 EUR = 7.82 CNY
-        "RUB": 96.2,    // 1 EUR = 96.2 RUB
-        "CAD": 1.46,    // 1 EUR = 1.46 CAD
-        "AUD": 1.64,    // 1 EUR = 1.64 AUD
-        "INR": 90.1     // 1 EUR = 90.1 INR
-    };
+  <!-- Stock Market Menu -->
+  <div class="content-menu" id="stockMarketMenu">
+    <h3>📈 Stock Market</h3>
+    <select id="stock-select">
+      <option value="0">Keine Auswahl</option>
+      <option value="1000">Tech Aktie (+150€ pro Job)</option>
+      <option value="1500">Gesundheits-Aktie (+200€ pro Job)</option>
+      <option value="2000">Krypto Aktie (+300€ pro Job)</option>
+    </select>
+    <button onclick="buyStock()">✔ Kaufen</button>
+    <button class="close-btn" onclick="closeMenu('stockMarketMenu')">❌ Schließen</button>
+  </div>
 
+  <!-- Real Estate Menu -->
+  <div class="content-menu" id="realEstateMenu">
+    <h3>🏠 Real Estate</h3>
+    <select id="real-estate-select">
+      <option value="0">Keine Auswahl</option>
+      <option value="500000">Villa in LA (+500€ pro Job)</option>
+      <option value="700000">Penthouse in Dubai (+700€ pro Job)</option>
+      <option value="1200000">Schloss in Deutschland (+1000€ pro Job)</option>
+    </select>
+    <button onclick="buyRealEstate()">✔ Kaufen</button>
+    <button class="close-btn" onclick="closeMenu('realEstateMenu')">❌ Schließen</button>
+  </div>
+
+  <!-- Business Expansion Menu -->
+  <div class="content-menu" id="businessMenu">
+    <h3>🚀 Business Expansion</h3>
+    <select id="business-select">
+      <option value="0">Keine Auswahl</option>
+      <option value="300000">Start-up Büro (+500€ pro Job)</option>
+      <option value="500000">CEO-Büro (+800€ pro Job)</option>
+    </select>
+    <button onclick="buyBusiness()">✔ Kaufen</button>
+    <button class="close-btn" onclick="closeMenu('businessMenu')">❌ Schließen</button>
+  </div>
+
+  <script>
+    // Initialize balances and job variables
+    let bankBalance = 10000;
+    let cash = 0;
+    let baseEarnings = 50; // Base job earnings
+    let tempBoost = 0;     // Temporary boost for the next job
+
+    // Update display for bank and cash
     function updateBalanceDisplay() {
-        let currency = document.getElementById("currency").value;
-        let convertedBalance = (balance * exchangeRates[currency]).toLocaleString();
-        document.getElementById("balance").innerText = `Guthaben: ${convertedBalance} ${currency}`;
+      document.getElementById("bank-balance").textContent = bankBalance.toLocaleString(undefined, { minimumFractionDigits: 3 });
+      document.getElementById("bank-balance-display").textContent = bankBalance.toLocaleString(undefined, { minimumFractionDigits: 3 });
+      document.getElementById("cash-display").textContent = cash.toLocaleString(undefined, { minimumFractionDigits: 3 });
     }
 
-    function changeCurrency() {
+    // Deposit (Cash to Bank) or Withdraw (Bank to Cash)
+    function updateBalance(isDeposit) {
+      let amount = parseFloat(document.getElementById("amount").value);
+      if (!amount || amount <= 0) {
+        alert("Bitte gib einen gültigen Betrag ein!");
+        return;
+      }
+      if (isDeposit) {
+        if (cash >= amount) {
+          cash -= amount;
+          bankBalance += amount;
+        } else {
+          alert("❌ Nicht genug Bargeld!");
+          return;
+        }
+      } else {
+        if (bankBalance >= amount) {
+          bankBalance -= amount;
+          cash += amount;
+        } else {
+          alert("❌ Nicht genug Guthaben!");
+          return;
+        }
+      }
+      updateBalanceDisplay();
+    }
+
+    // Menu open/close functions
+    function openJobMenu() {
+      closeAllMenus();
+      document.getElementById("jobMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openBankMenu() {
+      closeAllMenus();
+      document.getElementById("bankMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openBuyMenu() {
+      closeAllMenus();
+      document.getElementById("buyMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openDealershipMenu() {
+      closeAllMenus();
+      document.getElementById("dealershipMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openStockMarketMenu() {
+      closeAllMenus();
+      document.getElementById("stockMarketMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openRealEstateMenu() {
+      closeAllMenus();
+      document.getElementById("realEstateMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function openBusinessMenu() {
+      closeAllMenus();
+      document.getElementById("businessMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    // New: Cash Options Menu
+    function openCashMenu() {
+      closeAllMenus();
+      document.getElementById("cashMenu").style.display = "block";
+      document.getElementById("overlay").style.display = "block";
+    }
+    function closeMenu(menuId) {
+      document.getElementById(menuId).style.display = "none";
+      document.getElementById("overlay").style.display = "none";
+    }
+    function closeAllMenus() {
+      document.querySelectorAll('.content-menu').forEach(menu => menu.style.display = 'none');
+      document.getElementById("overlay").style.display = "none";
+    }
+
+    // When doing a job, earnings (plus any temporary boost) are added to cash.
+    function doJob(job) {
+      let earnings = 0;
+      if (job === 'Freelancer') {
+        earnings = baseEarnings;
+      } else if (job === 'Uber') {
+        earnings = 80;
+      } else if (job === 'Designer') {
+        earnings = 100;
+      }
+      earnings += tempBoost; // Add boost if available
+      tempBoost = 0;         // Reset boost after one use
+      cash += earnings;
+      updateBalanceDisplay();
+      alert(`Du hast als ${job} gearbeitet und ${earnings} € verdient. Das Geld liegt jetzt als Bargeld vor.`);
+      closeMenu('jobMenu');
+    }
+
+    // Purchase functions use bankBalance.
+    function buyCar() {
+      const carPrice = parseFloat(document.getElementById('car-select').value);
+      if (carPrice > 0 && bankBalance >= carPrice) {
+        bankBalance -= carPrice;
+        baseEarnings += carPrice / 1000;
         updateBalanceDisplay();
+        alert("🚗 Auto gekauft! Dein Job-Einkommen wurde erhöht.");
+      } else {
+        alert("❌ Du hast nicht genug Guthaben!");
+      }
+      closeMenu('dealershipMenu');
     }
 
-    function depositMoney() {
-        let amount = parseFloat(prompt("Wie viel möchten Sie einzahlen?"));
-        if (!isNaN(amount) && amount > 0) {
-            balance += amount;
-            updateBalanceDisplay();
-            alert(`Sie haben ${amount.toLocaleString()}€ eingezahlt.`);
-        }
+    function buyStock() {
+      const stockPrice = parseFloat(document.getElementById('stock-select').value);
+      if (stockPrice > 0 && bankBalance >= stockPrice) {
+        bankBalance -= stockPrice;
+        baseEarnings += stockPrice / 5000;
+        updateBalanceDisplay();
+        alert("📈 Aktie gekauft! Dein Job-Einkommen wurde erhöht.");
+      } else {
+        alert("❌ Du hast nicht genug Guthaben!");
+      }
+      closeMenu('stockMarketMenu');
     }
 
-    function withdrawMoney() {
-        let amount = parseFloat(prompt("Wie viel möchten Sie auszahlen?"));
-        if (!isNaN(amount) && amount > 0 && amount <= balance) {
-            balance -= amount;
-            updateBalanceDisplay();
-            alert(`Sie haben ${amount.toLocaleString()}€ ausgezahlt.`);
-        }
+    function buyRealEstate() {
+      const estatePrice = parseFloat(document.getElementById('real-estate-select').value);
+      if (estatePrice > 0 && bankBalance >= estatePrice) {
+        bankBalance -= estatePrice;
+        baseEarnings += estatePrice / 10000;
+        updateBalanceDisplay();
+        alert("🏠 Immobilie gekauft! Dein Job-Einkommen wurde erhöht.");
+      } else {
+        alert("❌ Du hast nicht genug Guthaben!");
+      }
+      closeMenu('realEstateMenu');
     }
-</script>
+
+    function buyBusiness() {
+      const businessPrice = parseFloat(document.getElementById('business-select').value);
+      if (businessPrice > 0 && bankBalance >= businessPrice) {
+        bankBalance -= businessPrice;
+        baseEarnings += businessPrice / 5000;
+        updateBalanceDisplay();
+        alert("🚀 Geschäft gestartet! Dein Job-Einkommen wurde erhöht.");
+      } else {
+        alert("❌ Du hast nicht genug Guthaben!");
+      }
+      closeMenu('businessMenu');
+    }
+
+    // New: Cash Options functions – using cash for mini-games/upgrades.
+    function playLottery() {
+      if (cash >= 100) {
+        cash -= 100;
+        // 50% chance to win: if win, add 200 cash; if lose, nothing is returned.
+        if (Math.random() < 0.5) {
+          cash += 200;
+          alert("Glückwunsch! Du hast im Lottery gewonnen und bekommst 200 Cash!");
+        } else {
+          alert("Leider verloren!");
+        }
+      } else {
+        alert("❌ Nicht genug Bargeld für Lottery!");
+      }
+      updateBalanceDisplay();
+      closeMenu('cashMenu');
+    }
+
+    function buyBoost() {
+      if (cash >= 200) {
+        cash -= 200;
+        tempBoost = 100; // Next job earns extra 100€
+        alert("Boost gekauft! Dein nächster Job wird um 100€ erhöht.");
+      } else {
+        alert("❌ Nicht genug Bargeld für Boost!");
+      }
+      updateBalanceDisplay();
+      closeMenu('cashMenu');
+    }
+
+    // Initialize display
+    updateBalanceDisplay();
+  </script>
 
 </body>
 </html>
