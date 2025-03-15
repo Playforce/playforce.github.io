@@ -51,7 +51,7 @@ body {
     
 .silvan {
     border: solid lightgreen 3px;
-    box-shadow: 0 4px 8px rgba(0, 255, 0, 1);
+    box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
 }
 
 .silvan:hover {
