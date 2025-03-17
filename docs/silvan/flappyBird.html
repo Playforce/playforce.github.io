@@ -46,9 +46,12 @@
         const restartButton = document.getElementById("restartButton");
 
         let bird, pipes, score, gameOver, gameStarted, countdown;
-        let pipeWidth = 2, pipeGap = 10, gameSpeed = 2;
+        let pipeWidth = 50, pipeGap = 140, gameSpeed = 2;
 
         function resetGame() {
+            if (highScore() < score) {
+                highScore(score);
+            }
             bird = { x: 50, y: 150, radius: 15, velocity: 0, gravity: 0.14, jump: -5 };
             pipes = [];
             score = 0;
@@ -57,8 +60,26 @@
             countdown = 3;
             restartButton.style.display = "none";
             jumpButton.style.display = "none";
+            alert('High Score is ' + highScore());
             startCountdown();
         }
+        
+        function highScore(score) {
+   var saved = 0;
+   try { saved = parseFloat(localStorage.highScore); } catch (e) { saved = 0; }
+   if (!(typeof score === 'undefined')) {
+      try { score = parseFloat(score); } catch (e) { score = 0; }
+      if (score>saved) {
+        saved = score;
+        localStorage.highScore = '' + score;
+      }
+   }
+   if (isNaN(saved)) {
+      saved = 0;
+      localStorage.highScore = '0';
+   }
+   return saved;
+}
 
         function startCountdown() {
             let countdownInterval = setInterval(() => {
@@ -131,11 +152,11 @@
                 pipeGradient.addColorStop(0, "#008000");
                 pipeGradient.addColorStop(0.5, "#00A000");
                 pipeGradient.addColorStop(1, "#008000");
-                
+
                 ctx.fillStyle = pipeGradient;
                 ctx.fillRect(pipe.x, 0, pipeWidth, pipe.y);
                 ctx.fillRect(pipe.x, pipe.y + pipeGap, pipeWidth, canvas.height - pipe.y - pipeGap);
-                
+
                 ctx.strokeStyle = "#004d00";
                 ctx.lineWidth = 2;
                 ctx.strokeRect(pipe.x, 0, pipeWidth, pipe.y);
