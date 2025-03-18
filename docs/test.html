@@ -57,6 +57,7 @@
     <button class="btn" onclick="showGame('slots')">Slot Machine</button>
     <button class="btn" onclick="showGame('blackjack')">Blackjack</button>
     <button class="btn" onclick="showGame('roulette')">Roulette</button>
+    <button class="btn" onclick="reset()">Reset</button>
 
     <!-- SLOT MACHINE -->
     <div id="slots" class="game-container">
@@ -85,6 +86,11 @@
     <script>
         money = 10000;
         document.getElementById("moneyy").innerHTML = money;
+
+        function reset() {
+            money = 10000;
+            document.getElementById("moneyy").innerHTML = money;
+        }
         
         function showGame(game) {
             document.querySelectorAll('.game-container').forEach(el => el.classList.remove('active'));
