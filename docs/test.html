@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2b2b2b;
+            color: white;
+        }
+        h1 {
+            color: gold;
+        }
+        .game-container {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: gold;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .btn:hover {
+            background-color: darkgoldenrod;
+        }
+        #slot-result {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        .roulette-wheel {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 10px solid gold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 20px auto;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎰 Welcome to the Casino 🎲</h1>
+    <h2>💸Money </h2>
+    <h2 id="moneyy"></h2>
+    <button class="btn" onclick="showGame('slots')">Slot Machine</button>
+    <button class="btn" onclick="showGame('blackjack')">Blackjack</button>
+    <button class="btn" onclick="showGame('roulette')">Roulette</button>
+
+    <!-- SLOT MACHINE -->
+    <div id="slots" class="game-container">
+        <h2>Slot Machine 🎰</h2>
+        <input id="einsatz" type="number">
+        <button class="btn" onclick="playSlot()">Spin</button>
+        <p id="slot-result">🎲 🎲 🎲</p>
+    </div>
+
+    <!-- BLACKJACK -->
+    <div id="blackjack" class="game-container">
+        <h2>Blackjack 🃏</h2>
+        <p id="blackjack-status">Click deal to start</p>
+        <button class="btn" onclick="dealBlackjack()">Deal</button>
+        <button class="btn" onclick="hit()">Hit</button>
+        <button class="btn" onclick="stand()">Stand</button>
+    </div>
+
+    <!-- ROULETTE -->
+    <div id="roulette" class="game-container">
+        <h2>Roulette 🎡</h2>
+        <div class="roulette-wheel" id="roulette-wheel">?</div>
+        <button class="btn" onclick="spinRoulette()">Spin</button>
+    </div>
+
+    <script>
+        money = 10000;
+        document.getElementById("moneyy").innerHTML = money;
+        
+        function showGame(game) {
+            document.querySelectorAll('.game-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(game).classList.add('active');
+        }
+
+        // SLOT MACHINE LOGIC
+        function playSlot() {
+            inp = parseInt(document.getElementById("einsatz"));
+            money -= inp;
+            document.getElementById("moneyy").innerHTML = money;
+            let symbols = ['🍒', '🍋', '🔔', '⭐', '🍉'];
+            let slot1 = symbols[Math.floor(Math.random() * symbols.length)];
+            let slot2 = symbols[Math.floor(Math.random() * symbols.length)];
+            let slot3 = symbols[Math.floor(Math.random() * symbols.length)];
+            document.getElementById('slot-result').innerHTML = `${slot1} ${slot2} ${slot3}`;
+            if (slot1 === slot2 && slot2 === slot3) {
+                alert("🎉 Jackpot! You win! 🎉");
+                money += 50000;
+                document.getElementById("moneyy").innerHTML = money;
+            }
+        }
+
+        // BLACKJACK LOGIC
+        let blackjackDeck = [];
+        let playerHand = [];
+        let dealerHand = [];
+
+        function createDeck() {
+            let suits = ["♠", "♣", "♥", "♦"];
+            let values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+            blackjackDeck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    blackjackDeck.push(value + suit);
+                }
+            }
+        }
+
+        function drawCard() {
+            return blackjackDeck.splice(Math.floor(Math.random() * blackjackDeck.length), 1)[0];
+        }
+
+        function calculatePoints(hand) {
+            let points = 0;
+            let aces = 0;
+            for (let card of hand) {
+                let value = card.slice(0, -1);
+                if (["J", "Q", "K"].includes(value)) points += 10;
+                else if (value === "A") {
+                    points += 11;
+                    aces++;
+                } else points += parseInt(value);
+            }
+            while (points > 21 && aces > 0) {
+                points -= 10;
+                aces--;
+            }
+            return points;
+        }
+
+        function dealBlackjack() {
+            createDeck();
+            playerHand = [drawCard(), drawCard()];
+            dealerHand = [drawCard(), drawCard()];
+            updateBlackjack();
+        }
+
+        function hit() {
+            playerHand.push(drawCard());
+            updateBlackjack();
+        }
+
+        function stand() {
+            while (calculatePoints(dealerHand) < 17) {
+                dealerHand.push(drawCard());
+            }
+            updateBlackjack(true);
+        }
+
+        function updateBlackjack(isFinal = false) {
+            let playerPoints = calculatePoints(playerHand);
+            let dealerPoints = calculatePoints(dealerHand);
+            let status = `Player: ${playerHand.join(", ")} (${playerPoints})<br>Dealer: ${isFinal ? dealerHand.join(", ") + " (" + dealerPoints + ")" : dealerHand[0] + ", ?"}<br>`;
+
+            if (isFinal) {
+                if (playerPoints > 21) status += "You busted! Dealer wins!";
+                else if (dealerPoints > 21 || playerPoints > dealerPoints) status += "You win!";
+                else if (playerPoints < dealerPoints) status += "Dealer wins!";
+                else status += "It's a tie!";
+            } else {
+                if (playerPoints > 21) status += "You busted!";
+            }
+            document.getElementById("blackjack-status").innerHTML = status;
+        }
+
+        // ROULETTE LOGIC
+        function spinRoulette() {
+            let number = Math.floor(Math.random() * 37);
+            document.getElementById('roulette-wheel').innerText = number;
+            alert(`The roulette landed on ${number}`);
+        }
+    </script>
+</body>
+</html>
