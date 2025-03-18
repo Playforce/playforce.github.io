@@ -55,10 +55,10 @@
     <h2>💸Money </h2>
     <h2 id="moneyy"></h2>
     <input id="einsatz" type="number">
+    <button class="btn" onclick="reset()">Reset</button>
     <button class="btn" onclick="showGame('slots')">Slot Machine</button>
     <button class="btn" onclick="showGame('blackjack')">Blackjack</button>
     <button class="btn" onclick="showGame('roulette')">Roulette</button>
-    <button class="btn" onclick="reset()">Reset</button>
 
     <!-- SLOT MACHINE -->
     <div id="slots" class="game-container">
@@ -207,14 +207,34 @@
             let status = `Player: ${playerHand.join(", ")} (${playerPoints})<br>Dealer: ${isFinal ? dealerHand.join(", ") + " (" + dealerPoints + ")" : dealerHand[0] + ", ?"}<br>`;
 
             if (isFinal) {
-                if (playerPoints > 21) status += "You busted! Dealer wins!";
-                else if (dealerPoints > 21 || playerPoints > dealerPoints) status += "You win!";
-                else if (playerPoints < dealerPoints) status += "Dealer wins!";
-                else status += "It's a tie!";
+                if (playerPoints > 21) { 
+status += "You busted! Dealer wins!";
+    st = 0;
+} else if (dealerPoints > 21 || playerPoints > dealerPoints) {
+    status += "You win!";
+    st = 1;
+} else if (playerPoints < dealerPoints) {
+    status += "Dealer wins!";
+    st = 0;
+}
+                else {
+    status += "It's a tie!";
+    st = 2;
+}
             } else {
                 if (playerPoints > 21) status += "You busted!";
+                st = 0;
             }
             document.getElementById("blackjack-status").innerHTML = status;
+        inp = parseInt(document.getElementById('einsatz').value, 10);
+        if (st === 0) {
+            money -= inp;
+            geld(money);
+        if (st === 1) {
+            money += (inp * 3);
+            geld(money);
+        }
+        document.getElementById("moneyy").innerHTML = money;
         }
 
         // ROULETTE LOGIC
