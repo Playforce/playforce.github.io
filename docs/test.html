@@ -93,7 +93,8 @@
 
         // SLOT MACHINE LOGIC
         function playSlot() {
-            inp = parseInt(document.getElementById("einsatz"));
+            inp = document.getElementById("einsatz");
+            Math.floor(inp);
             money -= inp;
             document.getElementById("moneyy").innerHTML = money;
             let symbols = ['🍒', '🍋', '🔔', '⭐', '🍉'];
