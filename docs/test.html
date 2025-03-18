@@ -122,7 +122,7 @@
 
         // SLOT MACHINE LOGIC
         function playSlot() {
-            highScore(money);
+            geld(money);
             inp = parseInt(document.getElementById('einsatz').value, 10);
             if (money < inp) {
                 alert("Not Enough Money");
@@ -141,7 +141,7 @@
                     document.getElementById("moneyy").innerHTML = money;
                 }
             }
-            highScore(money);
+            geld(money);
         }
 
         // BLACKJACK LOGIC
