@@ -58,6 +58,15 @@ body {
     background-color: lightgreen;
 }
 
+.andere {
+    border: solid red 3px;
+    box-shadow: 0 4px 8px rgba(255, 0, 0, 1);
+}
+
+.andere:hover {
+    background-color: red;
+}
+
 /* Responsive Design */
 @media (min-width: 600px) {
     .nav-links {
