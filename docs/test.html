@@ -94,18 +94,22 @@
         // SLOT MACHINE LOGIC
         function playSlot() {
             inp = parseInt(document.getElementById('einsatz').value, 10);
-            money -= inp;
-            document.getElementById("moneyy").innerHTML = money;
-            let symbols = ['🍒', '🍋', '🔔', '⭐', '🍉'];
-            let slot1 = symbols[Math.floor(Math.random() * symbols.length)];
-            let slot2 = symbols[Math.floor(Math.random() * symbols.length)];
-            let slot3 = symbols[Math.floor(Math.random() * symbols.length)];
-            document.getElementById('slot-result').innerHTML = `${slot1} ${slot2} ${slot3}`;
-            if (slot1 === slot2 && slot2 === slot3) {
-                alert("🎉 Jackpot! You win! 🎉");
-                money += (inp * 30);
-                money += (inp / 30);
+            if ((money -= inp) < 0) {
+                alert("Not Enough Money");
+            } else {
+                money -= inp;
                 document.getElementById("moneyy").innerHTML = money;
+                let symbols = ['🍒', '🍋', '🔔', '⭐', '🍉'];
+                let slot1 = symbols[Math.floor(Math.random() * symbols.length)];
+                let slot2 = symbols[Math.floor(Math.random() * symbols.length)];
+                let slot3 = symbols[Math.floor(Math.random() * symbols.length)];
+                document.getElementById('slot-result').innerHTML = `${slot1} ${slot2} ${slot3}`;
+                if (slot1 === slot2 && slot2 === slot3) {
+                    alert("🎉 Jackpot! You win! 🎉");
+                    money += (inp * 30);
+                    money += (inp / 30);
+                    document.getElementById("moneyy").innerHTML = money;
+                }
             }
         }
 
