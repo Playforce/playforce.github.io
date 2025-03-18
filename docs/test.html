@@ -121,6 +121,7 @@
 
         // SLOT MACHINE LOGIC
         function playSlot() {
+            highScore(money);
             inp = parseInt(document.getElementById('einsatz').value, 10);
             if (money < inp) {
                 alert("Not Enough Money");
