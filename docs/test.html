@@ -87,6 +87,8 @@
         if (highScore() == 0) {
             money = 10000;
             highScore(money);
+        } else {
+            money = highScore();
         }
         document.getElementById("moneyy").innerHTML = money;
 
