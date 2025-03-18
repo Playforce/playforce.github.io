@@ -94,7 +94,7 @@
         // SLOT MACHINE LOGIC
         function playSlot() {
             inp = parseInt(document.getElementById('einsatz').value, 10);
-            if ((money -= inp) < 0) {
+            if (money < inp) {
                 alert("Not Enough Money");
             } else {
                 money -= inp;
