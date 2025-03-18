@@ -84,34 +84,34 @@
     </div>
 
     <script>
-        if (highScore() == 0) {
+        if (geld() == 0) {
             money = 10000;
-            highScore(money);
+            geld(money);
         } else {
-            money = highScore();
+            money = geld();
         }
         document.getElementById("moneyy").innerHTML = money;
 
-        function highScore(score) {
+        function geld(score) {
            var saved = 0;
-           try { saved = parseFloat(localStorage.highScore); } catch (e) { saved = 0; }
+           try { saved = parseFloat(localStorage.geld); } catch (e) { saved = 0; }
            if (!(typeof score === 'undefined')) {
               try { score = parseFloat(score); } catch (e) { score = 0; }
               
                 saved = score;
-                localStorage.highScore = '' + score;
+                localStorage.geld = '' + score;
               
            }
            if (isNaN(saved)) {
               saved = 0;
-              localStorage.highScore = '0';
+              localStorage.geld = '0';
            }
            return saved;
         }
 
         function reset() {
             money = 10000;
-            highScore(10000);
+            geld(10000);
             document.getElementById("moneyy").innerHTML = money;
         }
         
