@@ -107,6 +107,7 @@
                 gameOver = true;
                 restartButton.style.display = "inline-block";
                 jumpButton.style.display = "none";
+                document.addEventListener("keydown", restartGame());
                 return;
             }
 
