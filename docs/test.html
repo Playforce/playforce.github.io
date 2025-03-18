@@ -95,7 +95,7 @@
         function playSlot() {
             inp = document.getElementById("einsatz");
             Math.floor(inp);
-            money -= inp;
+            money = money - inp;
             document.getElementById("moneyy").innerHTML = money;
             let symbols = ['🍒', '🍋', '🔔', '⭐', '🍉'];
             let slot1 = symbols[Math.floor(Math.random() * symbols.length)];
