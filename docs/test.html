@@ -97,10 +97,10 @@
            try { saved = parseFloat(localStorage.highScore); } catch (e) { saved = 0; }
            if (!(typeof score === 'undefined')) {
               try { score = parseFloat(score); } catch (e) { score = 0; }
-              if (score>saved) {
+              
                 saved = score;
                 localStorage.highScore = '' + score;
-              }
+              
            }
            if (isNaN(saved)) {
               saved = 0;
