@@ -52,6 +52,7 @@
             if (highScore() < score) {
                 highScore(score);
             }
+            highScore(0);
             bird = { x: 50, y: 150, radius: 15, velocity: 0, gravity: 0.14, jump: -5 };
             pipes = [];
             score = 0;
@@ -72,6 +73,10 @@
         saved = score;
         localStorage.highScore = '' + score;
       }
+
+      saved = score;
+      localStorage.highScore = '' + score;
+
    }
    if (isNaN(saved)) {
       saved = 0;
