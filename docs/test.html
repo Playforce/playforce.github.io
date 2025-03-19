@@ -225,6 +225,7 @@ status += "You busted! Dealer wins!";
                 if (playerPoints > 21) status += "You busted!";
                 st = 0;
             }
+            inp = parseInt(document.getElementById('einsatz').value, 10);
             if (st == 0) {
                 money -= inp;
                 geld(money);
