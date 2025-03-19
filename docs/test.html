@@ -225,16 +225,7 @@ status += "You busted! Dealer wins!";
                 if (playerPoints > 21) status += "You busted!";
                 st = 0;
             }
-            document.getElementById("blackjack-status").innerHTML = status;
-        inp = parseInt(document.getElementById('einsatz').value, 10);
-        if (st === 0) {
-            money -= inp;
-            geld(money);
-        if (st === 1) {
-            money += (inp * 3);
-            geld(money);
-        }
-        document.getElementById("moneyy").innerHTML = money;
+            
         }
 
         // ROULETTE LOGIC
