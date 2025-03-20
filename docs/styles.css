@@ -40,12 +40,12 @@ body {
     color: black;
 }
 
-.btn {
+.knopf {
     border: solid lightgreen 3px;
     box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
 }
 
-.btn:hover {
+.knopf:hover {
     background-color: lightgreen;
 }
 
