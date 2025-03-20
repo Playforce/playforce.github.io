@@ -208,19 +208,18 @@
 
             if (isFinal) {
                 if (playerPoints > 21) { 
-status += "You busted! Dealer wins!";
-    st = 0;
-} else if (dealerPoints > 21 || playerPoints > dealerPoints) {
-    status += "You win!";
-    st = 1;
-} else if (playerPoints < dealerPoints) {
-    status += "Dealer wins!";
-    st = 0;
-}
-                else {
-    status += "It's a tie!";
-    st = 2;
-}
+                    status += "You busted! Dealer wins!";
+                    st = 0;
+                } else if (dealerPoints > 21 || playerPoints > dealerPoints) {
+                    status += "You win!";
+                    st = 1;
+                } else if (playerPoints < dealerPoints) {
+                    status += "Dealer wins!";
+                    st = 0;
+                } else {
+                    status += "It's a tie!";
+                    st = 2;
+                }
                 inp = parseInt(document.getElementById('einsatz').value, 10);
                 if (st == 0) {
                     money -= inp;
@@ -231,11 +230,7 @@ status += "You busted! Dealer wins!";
                     geld(money);
                 }
                 document.getElementById("moneyy").innerHTML = money;
-            } else {
-                if (playerPoints > 21) status += "You busted!";
-                st = 0;
             }
-            
         }
 
         // ROULETTE LOGIC
