@@ -90,6 +90,7 @@
     <!-- ROULETTE -->
     <div id="roulette" class="game-container">
         <h2>Roulette 🎡</h2>
+        <p>0-36 oder [r]ot [s]chwarz</p>
         <input class="inp" id="guess" type="number">
         <div class="roulette-wheel" id="roulette-wheel">?</div>
         <button class="btn" onclick="spinRoulette()">Spin</button>
@@ -256,7 +257,7 @@ function updateBlackjack(isFinal = false) {
 // ROULETTE LOGIC
 function spinRoulette() {
     let bet = parseInt(document.getElementById('einsatz').value, 10);
-    let chosenNumber = prompt("Setze auf eine Zahl (0-36) oder gib 'r' (Rot) / 's' (Schwarz) ein:").trim().toLowerCase();
+    let chosenNumber = document.getElementById('guess');
     
     if (money < bet || bet <= 0) {
         alert("Nicht genug Geld oder ungültiger Einsatz!");
