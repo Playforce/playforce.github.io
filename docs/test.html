@@ -244,7 +244,7 @@ function updateBlackjack(isFinal = false) {
 // ROULETTE LOGIC
 function spinRoulette() {
     let bet = parseInt(document.getElementById('einsatz').value, 10);
-    let chosenNumber = parseInt(prompt("Setze auf eine Zahl (0-36) oder gib 'odd' (ungerade) / 'even' (gerade) ein:"));
+    let chosenNumber = prompt("Setze auf eine Zahl (0-36) oder gib 'odd' (ungerade) / 'even' (gerade) ein:").trim().toLowerCase();
     
     if (money < bet || bet <= 0) {
         alert("Nicht genug Geld oder ungültiger Einsatz!");
