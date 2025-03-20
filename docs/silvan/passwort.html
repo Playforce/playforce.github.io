@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Hack</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #000; color: #0f0; text-align: center; }
+    h1 { margin-top: 50px; }
+    #console { 
+      background: black; 
+      padding: 20px; 
+      border: 2px solid #0f0; 
+      width: 50%; 
+      margin: auto; 
+      text-align: left; 
+      height: 300px; 
+      overflow-y: auto; 
+      white-space: pre-wrap; 
+    }
+    input, button, select { margin-top: 10px; padding: 10px; font-size: 16px; }
+    #continueButton { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Cyber Hack Terminal</h1>
+  <div id="console">
+    Willkommen im Hackersystem... Wähle ein Gerät zum Hacken:
+    <br><br>
+    <b>Farbcodes:</b>
+    <br>✔ <span style="color: lime;">Grün</span> = Richtiges Zeichen an richtiger Stelle
+    <br>✔ <span style="color: blue;">Blau</span> = Zeichen existiert, aber falsche Position
+    <br>✖ <span style="color: red;">Rot</span> = Zeichen kommt nicht im Passwort vor
+  </div>
+  <select id="deviceSelect" onchange="selectDevice()">
+    <option value="">-- Gerät auswählen --</option>
+    <optgroup label="Sehr niedrige Sicherheit">
+      <option value="Smart-Light">Smart-Light (1)</option>
+      <option value="IoT-Kamera">IoT-Kamera (1)</option>
+    </optgroup>
+    <optgroup label="Niedrige Sicherheit">
+      <option value="Smart-Watch">Smart-Watch (2)</option>
+      <option value="Smart-TV">Smart-TV (3)</option>
+      <option value="Smart Speaker">Smart Speaker (3)</option>
+      <option value="Spielkonsole">Spielkonsole (3)</option>
+      <!-- Neue Geräte in dieser Gruppe -->
+      <option value="Fitness Tracker">Fitness Tracker (2)</option>
+      <option value="Smart Thermostat">Smart Thermostat (3)</option>
+    </optgroup>
+    <optgroup label="Mittlere Sicherheit">
+      <option value="Router">Router (4)</option>
+      <option value="Smart Refrigerator">Smart Refrigerator (4)</option>
+      <option value="Drohne">Drohne (5)</option>
+      <option value="Tablet">Tablet (5)</option>
+      <option value="Smarte Türklingel">Smarte Türklingel (5)</option>
+      <!-- Neues Gerät in dieser Gruppe -->
+      <option value="Smart Home Hub">Smart Home Hub (5)</option>
+    </optgroup>
+    <optgroup label="Hohe Sicherheit">
+      <option value="Smartphone">Smartphone (6)</option>
+      <option value="Auto">Auto (7)</option>
+      <option value="Server">Server (7)</option>
+      <!-- Neues Gerät in dieser Gruppe -->
+      <option value="Smart Oven">Smart Oven (7)</option>
+    </optgroup>
+    <optgroup label="Sehr hohe Sicherheit">
+      <option value="Laptop">Laptop (8)</option>
+      <option value="PC">PC (9)</option>
+      <option value="Satellit">Satellit (9)</option>
+      <!-- Neues Gerät in dieser Gruppe -->
+      <option value="Workstation">Workstation (9)</option>
+    </optgroup>
+    <optgroup label="Extrem hohe Sicherheit">
+      <option value="Flugzeug">Flugzeug (10)</option>
+      <option value="Bankserver">Bankserver (10)</option>
+      <!-- Neues Gerät in dieser Gruppe -->
+      <option value="Military Server">Military Server (10)</option>
+    </optgroup>
+  </select>
+  <br>
+  <input type="text" id="userInput" placeholder="Passwort eingeben" disabled>
+  <button onclick="checkPassword()" id="enterButton" disabled>Enter</button>
+  <button onclick="continueGame()" id="continueButton">Weiter</button>
+
+  <script>
+    const consoleDiv = document.getElementById("console");
+    const userInput = document.getElementById("userInput");
+    const deviceSelect = document.getElementById("deviceSelect");
+    const enterButton = document.getElementById("enterButton");
+    const continueButton = document.getElementById("continueButton");
+    
+    let devices = {
+      "Smart-Light": { security: 1, hint: "Smart-Lights bieten fast keine Sicherheit." },
+      "IoT-Kamera": { security: 1, hint: "IoT-Kameras sind oft einfach gesichert." },
+      "Smart-Watch": { security: 2, hint: "Smart-Watches haben oft minimale Sicherheitsmaßnahmen." },
+      "Smart-TV": { security: 3, hint: "Smart-TVs sind häufig nicht gut gesichert." },
+      "Smart Speaker": { security: 3, hint: "Smart Speaker haben oft einfache Sicherheitsmaßnahmen." },
+      "Spielkonsole": { security: 3, hint: "Spielkonsolen sind in der Regel weniger gesichert." },
+      "Fitness Tracker": { security: 2, hint: "Fitness Tracker sind oft sehr einfach gesichert." },
+      "Smart Thermostat": { security: 3, hint: "Smart Thermostate haben häufig grundlegende Sicherheitsfunktionen." },
+      "Router": { security: 4, hint: "Router schützen das Heimnetzwerk, können aber angreifbar sein." },
+      "Smart Refrigerator": { security: 4, hint: "Smart Kühlschränke sind oft weniger gesichert." },
+      "Drohne": { security: 5, hint: "Drohnen haben moderate Sicherheitsmaßnahmen." },
+      "Tablet": { security: 5, hint: "Tablets sind ähnlich wie Smartphones, aber oft etwas weniger gesichert." },
+      "Smarte Türklingel": { security: 5, hint: "Smarte Türklingeln haben moderate Sicherheitsmaßnahmen." },
+      "Smart Home Hub": { security: 5, hint: "Smart Home Hubs verbinden mehrere Geräte, bieten aber oft durchschnittlichen Schutz." },
+      "Smartphone": { security: 6, hint: "Smartphones sind in der Regel gut gesichert." },
+      "Auto": { security: 7, hint: "Moderne Autos verfügen über komplexe Sicherheitssysteme." },
+      "Server": { security: 7, hint: "Server haben hohe Sicherheitsstandards, können aber angreifbar sein." },
+      "Smart Oven": { security: 7, hint: "Smart Öfen sind oft mit digitalen Steuerungen ausgestattet, aber nicht immer optimal gesichert." },
+      "Laptop": { security: 8, hint: "Laptops sind oft sehr gut gesichert, häufig mit Verschlüsselung." },
+      "PC": { security: 9, hint: "PCs haben sehr hohe Sicherheitsstandards mit mehreren Schutzmaßnahmen." },
+      "Satellit": { security: 9, hint: "Satelliten erfordern komplexe Sicherheitsmaßnahmen." },
+      "Workstation": { security: 9, hint: "Workstations sind in der Regel sehr sicher, da sie für professionelle Anwendungen gedacht sind." },
+      "Flugzeug": { security: 10, hint: "Flugzeuge haben extrem hohe Sicherheitsstandards." },
+      "Bankserver": { security: 10, hint: "Bankserver sind extrem gut gesichert." },
+      "Military Server": { security: 10, hint: "Military Server haben höchste Sicherheitsvorkehrungen." }
+    };
+    
+    let currentDevice = null;
+    let password = "";
+    let attempts = 0;
+    
+    function logMessage(message) {
+      consoleDiv.innerHTML += "<br>" + message;
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+    
+    function selectDevice() {
+      let device = deviceSelect.value;
+      if (device) {
+        currentDevice = devices[device];
+        resetGame();
+        logMessage("\n>>> Zielgerät: " + device + " (Sicherheitsstufe: " + currentDevice.security + ")");
+        logMessage("\n>>> " + currentDevice.hint);
+        logMessage("\n>>> Hack-Versuch gestartet...");
+        logMessage("Hinweis: Gib das Passwort Zeichen für Zeichen ein.");
+        logMessage("\n>>> Farbcodes: <span style='color: lime;'>Grün = Richtig</span>, <span style='color: blue;'>Blau = Falsche Position</span>, <span style='color: red;'>Rot = Falsch</span>");
+        givePasswordTip(password);
+        userInput.disabled = false;
+        enterButton.disabled = false;
+      } else {
+        userInput.disabled = true;
+        enterButton.disabled = true;
+      }
+    }
+    
+    function resetGame() {
+      password = generatePassword(currentDevice.security);
+      attempts = 0;
+      continueButton.style.display = "none";
+      userInput.disabled = false;
+      enterButton.disabled = false;
+    }
+    
+    function generatePassword(length) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+      let pass = '';
+      for (let i = 0; i < length; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return pass;
+    }
+    
+    function compareAndHighlight(correct, attempt) {
+      let resultHTML = "";
+      for (let i = 0; i < correct.length; i++) {
+        const correctChar = correct[i];
+        const attemptChar = attempt[i] || "";
+        if (attemptChar === correctChar) {
+          resultHTML += `<span style="color: lime;">${attemptChar}</span>`;
+        } else if (attemptChar !== "" && correct.indexOf(attemptChar) !== -1) {
+          resultHTML += `<span style="color: blue;">${attemptChar}</span>`;
+        } else if (attemptChar !== "") {
+          resultHTML += `<span style="color: red;">${attemptChar}</span>`;
+        } else {
+          resultHTML += `<span style="color: red;">_</span>`;
+        }
+      }
+      if (attempt.length > correct.length) {
+        for (let i = correct.length; i < attempt.length; i++) {
+          resultHTML += `<span style="color: red;">${attempt[i]}</span>`;
+        }
+      }
+      return resultHTML;
+    }
+    
+    function givePasswordTip(pw) {
+      let tip = "\nPasswort-Tipps:\n";
+      if (/[0-9]/.test(pw)) {
+        tip += " - Das Passwort enthält Zahlen. Überlege, ob sie am Anfang oder Ende stehen könnten.\n";
+      } else {
+        tip += " - Das Passwort enthält keine Zahlen.\n";
+      }
+      if (/[a-z]/.test(pw)) {
+        tip += " - Das Passwort enthält Kleinbuchstaben.\n";
+      } else {
+        tip += " - Das Passwort enthält keine Kleinbuchstaben.\n";
+      }
+      if (/[A-Z]/.test(pw)) {
+        tip += " - Das Passwort enthält Großbuchstaben.\n";
+      } else {
+        tip += " - Das Passwort enthält keine Großbuchstaben.\n";
+      }
+      if (/[^a-zA-Z0-9]/.test(pw)) {
+        tip += " - Das Passwort enthält Sonderzeichen.\n";
+      } else {
+        tip += " - Das Passwort enthält keine Sonderzeichen.\n";
+      }
+      if (pw.length > 5) {
+        tip += " - Das Passwort ist relativ lang.\n";
+      } else {
+        tip += " - Das Passwort ist relativ kurz.\n";
+      }
+      logMessage(tip);
+    }
+    
+    function checkPassword() {
+      let input = userInput.value.trim();
+      attempts++;
+      if (input === password) {
+        logMessage("\n>>> Zugriff auf " + deviceSelect.value + " gewährt! Passwort war: " + password);
+        logMessage("\n>>> System gehackt!");
+        userInput.disabled = true;
+        enterButton.disabled = true;
+        continueButton.style.display = "inline-block";
+      } else {
+        logMessage("\n>>> Falsches Passwort! Versuch " + attempts);
+        let highlighted = compareAndHighlight(password, input);
+        logMessage("Dein Versuch: " + highlighted);
+        givePasswordTip(password);
+      }
+      userInput.value = "";
+    }
+    
+    function continueGame() {
+      logMessage("\n>>> Neuer Hack-Versuch gestartet...");
+      resetGame();
+    }
+  </script>
+</body>
+</html>
