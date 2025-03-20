@@ -257,7 +257,7 @@ function updateBlackjack(isFinal = false) {
 // ROULETTE LOGIC
 function spinRoulette() {
     let bet = parseInt(document.getElementById('einsatz').value, 10);
-    let chosenNumber = document.getElementById('guess');
+    let chosenNumber = document.getElementById('guess').value;
     
     if (money < bet || bet <= 0) {
         alert("Nicht genug Geld oder ungültiger Einsatz!");
