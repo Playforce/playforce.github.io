@@ -48,13 +48,24 @@
             margin: 20px auto;
             background-color: red;
         }
+        .inp {
+            border: solid 3px red;
+            border-radius: 40px;
+            background-color: gold;
+            cursor: pointer;
+            padding: 10px 20px;
+            
+        }
+        .inp:hover {
+            background-color:darkgoldenrod;
+        }
     </style>
 </head>
 <body>
     <h1>🎰 Welcome to the Casino 🎲</h1>
     <h2>💸Money </h2>
     <h2 id="moneyy"></h2>
-    <input id="einsatz" type="number">
+    <input class="inp" id="einsatz" type="number">
     <button class="btn" onclick="reset()">Reset</button>
     <button class="btn" onclick="showGame('slots')">Slot Machine</button>
     <button class="btn" onclick="showGame('blackjack')">Blackjack</button>
