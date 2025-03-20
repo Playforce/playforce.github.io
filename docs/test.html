@@ -221,20 +221,21 @@ status += "You busted! Dealer wins!";
     status += "It's a tie!";
     st = 2;
 }
+                inp = parseInt(document.getElementById('einsatz').value, 10);
+                if (st == 0) {
+                    money -= inp;
+                    geld(money);
+                }
+                if (st == 1) {
+                    money += (inp * 2);
+                    geld(money);
+                }
+                document.getElementById("moneyy").innerHTML = money;
             } else {
                 if (playerPoints > 21) status += "You busted!";
                 st = 0;
             }
-            inp = parseInt(document.getElementById('einsatz').value, 10);
-            if (st == 0) {
-                money -= inp;
-                geld(money);
-            }
-            if (st == 1) {
-                money += (inp * 2);
-                geld(money);
-            }
-            document.getElementById("moneyy").innerHTML = money;
+            
         }
 
         // ROULETTE LOGIC
