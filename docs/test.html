@@ -241,8 +241,15 @@ status += "You busted! Dealer wins!";
         // ROULETTE LOGIC
         function spinRoulette() {
             let number = Math.floor(Math.random() * 37);
+            let color = Math.floor(Math.random() * 2);
             document.getElementById('roulette-wheel').innerText = number;
-            alert(`The roulette landed on ${number}`);
+            if ((number % 2) == 0) {
+                document.getElementById('roulette-wheel').style.backgroundColor = black;
+                document.getElementById('roulette-wheel').style.color = white;
+            } else {
+                document.getElementById('roulette-wheel').style.backgroundColor = red;
+                document.getElementById('roulette-wheel').style.color = black;
+            }
         }
     </script>
 </body>
