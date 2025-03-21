@@ -31,6 +31,13 @@
             font-weight: bold;
             box-shadow: 0 4px 8px rgba(255, 0, 0, 0.5);
         }
+        @media (min-width: 600px) {
+            button {
+                background: transparent;
+                border: none !important;
+                font-size:0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -38,7 +45,6 @@
     <canvas id="gameCanvas" width="400" height="500"></canvas>
     <br>
     <p><button id="jumpButton" onclick="jump()">Jump</button></p>
-    <p><button id="restartButton" onclick="restartGame()">Restart</button></p>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
@@ -58,7 +64,6 @@
             gameOver = false;
             gameStarted = false;
             countdown = 3;
-            restartButton.style.display = "none";
             jumpButton.style.display = "none";
             startCountdown();
         }
@@ -107,9 +112,8 @@
 
             if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
                 gameOver = true;
-                restartButton.style.display = "inline-block";
                 jumpButton.style.display = "none";
-                document.addEventListener("keydown", restartGame());
+                restartGame();
                 return;
             }
 
@@ -129,10 +133,8 @@
                     (bird.y - bird.radius < pipe.y || bird.y + bird.radius > pipe.y + pipeGap)
                 ) {
                     gameOver = true;
-                    restartButton.style.display = "inline-block";
                     jumpButton.style.display = "none";
-                    
-                    document.addEventListener("keydown", restartGame());
+                    restartGame();
                 }
             });
         }
