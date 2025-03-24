@@ -59,6 +59,13 @@
         let pipeWidth = 50, pipeGap = 140, gameSpeed = 2;
         let death = tode();
 
+        if ( $(window).width() > 739) {      
+          canvas.width = 800;
+        } 
+        else {
+          canvas.width = 300;
+        }
+
         function resetGame() {
             if (highScore() < score) {
                 highScore(score);
