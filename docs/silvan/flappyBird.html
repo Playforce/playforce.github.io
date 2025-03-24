@@ -54,6 +54,7 @@
 
         let bird, pipes, score, gameOver, gameStarted, countdown;
         let pipeWidth = 50, pipeGap = 140, gameSpeed = 2;
+        let death = tode();
 
         function resetGame() {
             if (highScore() < score) {
@@ -88,6 +89,25 @@
             return saved;
         }
 
+        function tode(score) {
+            var saved = 0;
+            try { saved = parseFloat(localStorage.tode); } catch (e) { saved = 0; }
+            if (!(typeof score === 'undefined')) {
+                try { score = parseFloat(score); } catch (e) { score = 0; }
+                if (score>saved) {
+                    saved = score;
+                    localStorage.tode = '' + score;
+                }
+                saved = score;
+                localStorage.tode = '' + score;
+            }
+            if (isNaN(saved)) {
+                saved = 0;
+                localStorage.tode = '0';
+            }
+            return saved;
+        }
+
         function startCountdown() {
             let countdownInterval = setInterval(() => {
                 countdown--;
@@ -114,6 +134,8 @@
             if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
                 gameOver = true;
                 jumpButton.style.display = "none";
+                death += 1;
+                tode(death);
                 restartGame();
                 return;
             }
@@ -135,6 +157,8 @@
                 ) {
                     gameOver = true;
                     jumpButton.style.display = "none";
+                    death += 1;
+                    tode(death);
                     restartGame();
                 }
             });
@@ -173,7 +197,8 @@
             ctx.fillStyle = "black";
             ctx.font = "20px Arial";
             ctx.fillText("Score: " + score, 10, 30);
-            ctx.fillText("High score: " + highScore(), 10, 50)
+            ctx.fillText("High score: " + highScore(), 10, 50);
+            ctx.fillText("Tode: " + tode(), 10, 70);
 
             if (!gameStarted) {
                 ctx.font = "30px Arial";
