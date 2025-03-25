@@ -60,6 +60,11 @@
         let death = tode();
 
         function resetGame() {
+            if (localStorage.getItem("playerName") === null) {
+                let person = prompt("Namen eingeben");
+                localStorage.setItem("playerName", person);
+            }
+
             if (highScore() < score) {
                 highScore(score);
             }
@@ -202,6 +207,8 @@
             ctx.fillText("Score: " + score, 10, 30);
             ctx.fillText("High score: " + highScore(), 10, 50);
             ctx.fillText("Deaths: " + tode(), 10, 70);
+            let name = localStorage.getItem("playerName");
+            ctx.fillText(name, 10, 90);
 
             if (!gameStarted) {
                 ctx.font = "30px Arial";
