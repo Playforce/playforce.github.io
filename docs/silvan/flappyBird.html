@@ -144,7 +144,7 @@
                 jumpButton.style.display = "none";
                 death += 1;
                 tode(death);
-                restartGame();
+                document.addEventListener("keydown", resetGame());
                 return;
             }
 
@@ -167,7 +167,7 @@
                     jumpButton.style.display = "none";
                     death += 1;
                     tode(death);
-                    restartGame();
+                    document.addEventlistener("keydown", resetGame());
                 }
             });
         }
