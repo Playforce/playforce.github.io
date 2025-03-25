@@ -128,7 +128,8 @@
   <!-- Banking Card -->
   <div class="amex-card">
     <div class="chip"></div>
-    <h3>BLACK CARD</h3>
+      <h3>BLACK CARD</h3>
+      <h3 id="user"></h3>
     <div class="balance">💳 Kontostand: <span id="bank-balance">10000.000</span> €</div>
   </div>
 
@@ -239,9 +240,11 @@
     let cash = 0;
     let baseEarnings = 50; // Base job earnings
     let tempBoost = 0;     // Temporary boost for the next job
+    let name = localStorage.getItem("playerName");
 
     // Update display for bank and cash
     function updateBalanceDisplay() {
+      document.getElementById("user").innerHTML = name;
       document.getElementById("bank-balance").textContent = bankBalance.toLocaleString(undefined, { minimumFractionDigits: 3 });
       document.getElementById("bank-balance-display").textContent = bankBalance.toLocaleString(undefined, { minimumFractionDigits: 3 });
       document.getElementById("cash-display").textContent = cash.toLocaleString(undefined, { minimumFractionDigits: 3 });
