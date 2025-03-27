@@ -8,7 +8,79 @@
 </head>
 <body>
   <style>
-    
+    /* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: black; /* Gray background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Navigation Bar */
+.navbar {
+    text-align: center;
+    width: 100%;
+}
+
+/* Button Style Links */
+.nav-links {
+    list-style: none;
+    padding: 0;
+}
+
+.nav-links li {
+    margin: 10px 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    background-color: #808080; /* Blue Button */
+
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+    color: black;
+}
+
+.knopf {
+    border: solid lightgreen 3px;
+    box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
+}
+
+.knopf:hover {
+    background-color: lightgreen;
+}
+
+.andere {
+    border: solid red 3px;
+    box-shadow: 0 4px 8px rgba(255, 0, 0, 1);
+}
+
+.andere:hover {
+    background-color: red;
+}
+
+/* Responsive Design */
+@media (min-width: 600px) {
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .nav-links li {
+        margin: 0;
+    }
+}
+
   </style>
 
     <nav class="navbar">
@@ -18,13 +90,7 @@
            <!-- class nicht vergessen -->
            <!-- li, a(class href), Name  -->
 
-            <li><a class="knopf" href="Lukas/karte.html">Karte</a></li>
-            <li><a class="knopf" href="Lukas/gta.html">Gta</a></li>
-            <li><a class="knopf" href="silvan/flappyBird.html">Fahd Bird</a></li>
-            <li><a class="knopf" href="silvan/handy.html">Handy Baukasten</a></li>
-            <li><a class="knopf" href="nico/casino.html">Casino</a></li>
-            <li><a class="knopf" href="silvan/passwort.html">Hacker</a></li>
-            <li><a class="andere" href="test.html"></a></li>
+           
         </ul>
     </nav>
 
