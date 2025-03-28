@@ -78,7 +78,7 @@
             gameStarted = false;
             countdown = 3;
             jumpButton.style.display = "none";
-            menuButton.style.display = "none";
+            menuButton.style.display = "inline-block";
             startCountdown();
         }
         
@@ -127,7 +127,7 @@
                     clearInterval(countdownInterval);
                     gameStarted = true;
                     jumpButton.style.display = "inline-block";
-                    menuButton.style.display = "inline-block";
+                    menuButton.style.display = "none";
                 }
                 drawGame();
             }, 1000);
@@ -147,7 +147,7 @@
             if (bird.y + bird.radius >= canvas.height || bird.y - bird.radius <= 0) {
                 gameOver = true;
                 jumpButton.style.display = "none";
-                menuButton.style.display = "none";
+                menuButton.style.display = "inline-block";
                 death += 1;
                 tode(death);
                 resetGame();
@@ -171,7 +171,7 @@
                 ) {
                     gameOver = true;
                     jumpButton.style.display = "none";
-                    menuButton.style.display = "none";
+                    menuButton.style.display = "inline-block";
                     death += 1;
                     tode(death);
                     resetGame();
