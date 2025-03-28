@@ -18,8 +18,40 @@
           align-items: center;
           height: 100vh;
           flex-direction: column;
+      }
+
+      .unter {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           gap: 20px;
-          color: white;
+      }
+
+      .option {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+      }
+
+      .option-label {
+          border: solid lightgreen 3px;
+          border-radius: 10px;
+          font-size: 18px;
+          font-weight: bold;
+          background-color: #808080;
+          color: black;
+          padding: 15px 30px;
+          transition: 0.3s;
+          box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 200px;
+      }
+
+      .option-label:hover {
+          background-color: lightgreen;
       }
 
       .switch {
@@ -72,31 +104,27 @@
       .slider.round:before {
           border-radius: 50%;
       }
-
-      .unter {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-          align-items: center;
-      }
   </style>
 
     <div class="unter">
-        <label>Stats
+        <label class="option-label" for="statsInp">
+            Stats
             <label class="switch">
                 <input type="checkbox" id="statsInp">
                 <span class="slider round"></span>
             </label>
         </label>
 
-        <label>Dark Mode
+        <label class="option-label" for="darkMode">
+            Dark Mode
             <label class="switch">
                 <input type="checkbox" id="darkMode">
                 <span class="slider round"></span>
             </label>
         </label>
 
-        <label>Sound
+        <label class="option-label" for="sound">
+            Sound
             <label class="switch">
                 <input type="checkbox" id="sound">
                 <span class="slider round"></span>
