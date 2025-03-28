@@ -179,9 +179,9 @@ input:checked + .slider:before {
     <script>
         function click(type) {
             if (document.getElementById(type).checked == true) {
-                
+                localStorage.setItem(type, "true");
             } else {
-
+                localStorage.setItem(type, "false");
             }
         }
     </script>
