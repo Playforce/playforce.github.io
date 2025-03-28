@@ -180,7 +180,7 @@ input:checked + .slider:before {
         document.getElementById("statsInp").checked = localStorage.getItem("statsInp");
         
         function click(type) {
-            if (document.getElementById(type).checked == true) {
+            if (document.getElementById(type).checked == false) {
                 localStorage.setItem(type, "true");
             } else {
                 localStorage.setItem(type, "false");
