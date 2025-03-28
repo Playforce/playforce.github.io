@@ -27,12 +27,6 @@
           gap: 20px;
       }
 
-      .option {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-      }
-
       .option-label {
           border: solid lightgreen 3px;
           border-radius: 10px;
@@ -46,104 +40,61 @@
           cursor: pointer;
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
           width: 200px;
+          user-select: none;
+      }
+
+      .option-label.active {
+          background-color: lightgreen;
       }
 
       .option-label:hover {
           background-color: lightgreen;
       }
 
-      .switch {
-          position: relative;
-          display: inline-block;
-          width: 60px;
-          height: 34px;
-      }
-
-      .switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-      }
-
-      .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-      }
-
-      .slider:before {
-          position: absolute;
-          content: "";
-          height: 26px;
-          width: 26px;
-          left: 4px;
-          bottom: 4px;
-          background-color: white;
-          transition: .4s;
-      }
-
-      input:checked + .slider {
-          background-color: #2196F3;
-      }
-
-      input:checked + .slider:before {
-          transform: translateX(26px);
-      }
-
-      .slider.round {
-          border-radius: 34px;
-      }
-
-      .slider.round:before {
-          border-radius: 50%;
+      /* Unsichtbare Checkbox */
+      .option-checkbox {
+          display: none;
       }
   </style>
 
     <div class="unter">
         <label class="option-label" for="statsInp">
             Stats
-            <label class="switch">
-                <input type="checkbox" id="statsInp">
-                <span class="slider round"></span>
-            </label>
+            <input type="checkbox" id="statsInp" class="option-checkbox">
         </label>
 
         <label class="option-label" for="darkMode">
             Dark Mode
-            <label class="switch">
-                <input type="checkbox" id="darkMode">
-                <span class="slider round"></span>
-            </label>
+            <input type="checkbox" id="darkMode" class="option-checkbox">
         </label>
 
         <label class="option-label" for="sound">
             Sound
-            <label class="switch">
-                <input type="checkbox" id="sound">
-                <span class="slider round"></span>
-            </label>
+            <input type="checkbox" id="sound" class="option-checkbox">
         </label>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Alle Checkboxen selektieren
-            const checkboxes = document.querySelectorAll("input[type='checkbox']");
+            const labels = document.querySelectorAll(".option-label");
 
-            checkboxes.forEach(checkbox => {
+            labels.forEach(label => {
+                const checkbox = label.querySelector(".option-checkbox");
+                const id = checkbox.id;
+
                 // Zustand aus LocalStorage laden
-                checkbox.checked = localStorage.getItem(checkbox.id) === "true";
+                if (localStorage.getItem(id) === "true") {
+                    checkbox.checked = true;
+                    label.classList.add("active");
+                }
 
-                // Event Listener für jede Checkbox
-                checkbox.addEventListener("change", function () {
-                    localStorage.setItem(checkbox.id, checkbox.checked);
+                // Klick-Event für die Labels
+                label.addEventListener("click", function () {
+                    checkbox.checked = !checkbox.checked;
+                    localStorage.setItem(id, checkbox.checked);
+                    label.classList.toggle("active", checkbox.checked);
                 });
             });
         });
@@ -151,3 +102,4 @@
 
 </body>
 </html>
+
