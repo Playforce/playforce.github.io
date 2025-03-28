@@ -8,156 +8,104 @@
 </head>
 <body>
   <style>
-      /* General Styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: black; /* Gray background */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: black;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+      }
 
-/* Navigation Bar */
-.navbar {
-    text-align: center;
-    width: 100%;
-}
+      .navbar {
+          text-align: center;
+          width: 100%;
+      }
 
-/* Button Style Links */
-.nav-links {
-    list-style: none;
-    padding: 0;
-}
+      .nav-links {
+          list-style: none;
+          padding: 0;
+      }
 
-.nav-links li {
-    margin: 10px 0;
-}
+      .nav-links li {
+          margin: 10px 0;
+      }
 
-.nav-links a {
-    text-decoration: none;
-    background-color: #808080; /* Blue Button */
+      .knopf {
+          border: solid lightgreen 3px;
+          border-radius: 10px;
+          font-size: 18px;
+          font-weight: bold;
+          background-color: #808080;
+          color: black;
+          padding: 15px 30px;
+          transition: 0.3s;
+          box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
+      }
 
-    color: white;
-    padding: 15px 30px;
-    border-radius: 10px;
-    display: inline-block;
-    font-size: 18px;
-    font-weight: bold;
-    transition: 0.3s;
-    color: black;
-}
+      .knopf:hover {
+          background-color: lightgreen;
+      }
 
-.knopf {
-    border: solid lightgreen 3px;
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    background-color: #808080;
-    color: black;
-    padding: 15px 30px;
-    transition: 0.3s;
-    box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
-}
+      .switch {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+      }
 
-.knopf:hover {
-    background-color: lightgreen;
-}
+      .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+      }
 
-.andere {
-    border: solid red 3px;
-    box-shadow: 0 4px 8px rgba(255, 0, 0, 1);
-}
+      .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+      }
 
-.andere:hover {
-    background-color: red;
-}
+      .slider:before {
+          position: absolute;
+          content: "";
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+      }
 
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
+      input:checked + .slider {
+          background-color: #2196F3;
+      }
 
-/* Hide default HTML checkbox */
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+      input:checked + .slider:before {
+          transform: translateX(26px);
+      }
 
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
+      .slider.round {
+          border-radius: 34px;
+      }
 
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
+      .slider.round:before {
+          border-radius: 50%;
+      }
 
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.slider.round {
-  border-radius: 34px;
-}
-
-.slider.round:before {
-  border-radius: 50%;
-}
-
-.unter {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Responsive Design */
-@media (min-width: 600px) {
-    .nav-links {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .nav-links li {
-        margin: 0;
-    }
-}
-
+      .unter {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 15px;
+      }
   </style>
 
     <div class="unter">
@@ -168,24 +116,26 @@ input:checked + .slider:before {
         </nav>
         <nav>
             <ul class="nav-links">
-                <!-- Rectangular switch -->
                 <label class="switch">
-                    <input type="checkbox" onclick="click(statsInp)" id="statsInp">
+                    <input type="checkbox" id="statsInp">
                     <span class="slider"></span>
                 </label>
             </ul>
         </nav>
     </div>
+
     <script>
-        document.getElementById("statsInp").checked = localStorage.getItem("statsInp");
-        
-        function click(type) {
-            if (document.getElementById(type).checked == false) {
-                localStorage.setItem(type, "true");
-            } else {
-                localStorage.setItem(type, "false");
-            }
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            const checkbox = document.getElementById("statsInp");
+
+            // Zustand aus LocalStorage laden
+            checkbox.checked = localStorage.getItem("statsInp") === "true";
+
+            // Event Listener für Änderungen
+            checkbox.addEventListener("change", function () {
+                localStorage.setItem("statsInp", checkbox.checked);
+            });
+        });
     </script>
 
 </body>
