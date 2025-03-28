@@ -17,36 +17,8 @@
           justify-content: center;
           align-items: center;
           height: 100vh;
-      }
-
-      .navbar {
-          text-align: center;
-          width: 100%;
-      }
-
-      .nav-links {
-          list-style: none;
-          padding: 0;
-      }
-
-      .nav-links li {
-          margin: 10px 0;
-      }
-
-      .knopf {
-          border: solid lightgreen 3px;
-          border-radius: 10px;
-          font-size: 18px;
-          font-weight: bold;
-          background-color: #808080;
-          color: black;
-          padding: 15px 30px;
-          transition: 0.3s;
-          box-shadow: 0 4px 8px rgba(144, 238, 144, 1);
-      }
-
-      .knopf:hover {
-          background-color: lightgreen;
+          flex-direction: column;
+          gap: 20px;
       }
 
       .switch {
@@ -102,38 +74,48 @@
 
       .unter {
           display: flex;
-          justify-content: center;
-          align-items: center;
+          flex-direction: column;
           gap: 15px;
+          align-items: center;
       }
   </style>
 
     <div class="unter">
-        <nav class="navbar">
-            <ul class="nav-links">
-                <p class="knopf">stats</p>
-            </ul>
-        </nav>
-        <nav>
-            <ul class="nav-links">
-                <label class="switch">
-                    <input type="checkbox" id="statsInp">
-                    <span class="slider"></span>
-                </label>
-            </ul>
-        </nav>
+        <label>Stats
+            <label class="switch">
+                <input type="checkbox" id="statsInp">
+                <span class="slider round"></span>
+            </label>
+        </label>
+
+        <label>Dark Mode
+            <label class="switch">
+                <input type="checkbox" id="darkMode">
+                <span class="slider round"></span>
+            </label>
+        </label>
+
+        <label>Sound
+            <label class="switch">
+                <input type="checkbox" id="sound">
+                <span class="slider round"></span>
+            </label>
+        </label>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const checkbox = document.getElementById("statsInp");
+            // Alle Checkboxen selektieren
+            const checkboxes = document.querySelectorAll("input[type='checkbox']");
 
-            // Zustand aus LocalStorage laden
-            checkbox.checked = localStorage.getItem("statsInp") === "true";
+            checkboxes.forEach(checkbox => {
+                // Zustand aus LocalStorage laden
+                checkbox.checked = localStorage.getItem(checkbox.id) === "true";
 
-            // Event Listener für Änderungen
-            checkbox.addEventListener("change", function () {
-                localStorage.setItem("statsInp", checkbox.checked);
+                // Event Listener für jede Checkbox
+                checkbox.addEventListener("change", function () {
+                    localStorage.setItem(checkbox.id, checkbox.checked);
+                });
             });
         });
     </script>
