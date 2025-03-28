@@ -138,6 +138,12 @@ input:checked + .slider:before {
   border-radius: 50%;
 }
 
+.unter {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
 /* Responsive Design */
 @media (min-width: 600px) {
     .nav-links {
@@ -153,20 +159,22 @@ input:checked + .slider:before {
 
   </style>
 
-    <nav class="navbar">
-        <ul class="nav-links">
-            <button class="knopf">stats</button>
-        </ul>
-    </nav>
-    <nav>
-        <ul class="nav-links">
-            <!-- Rectangular switch -->
-            <label class="switch">
-                <input type="checkbox">
-                <span class="slider"></span>
-            </label>
-        </ul>
-    </nav>
+    <div class="unter">
+        <nav class="navbar">
+            <ul class="nav-links">
+                <button class="knopf">stats</button>
+            </ul>
+        </nav>
+        <nav>
+            <ul class="nav-links">
+                <!-- Rectangular switch -->
+                <label class="switch">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </ul>
+        </nav>
+    </div>
 
 </body>
 </html>
