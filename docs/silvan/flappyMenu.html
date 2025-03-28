@@ -49,10 +49,6 @@
           background-color: lightgreen;
       }
 
-      .option-label:hover {
-          background-color: lightgreen;
-      }
-
       /* Unsichtbare Checkbox */
       .option-checkbox {
           display: none;
@@ -94,7 +90,13 @@
                 label.addEventListener("click", function () {
                     checkbox.checked = !checkbox.checked;
                     localStorage.setItem(id, checkbox.checked);
-                    label.classList.toggle("active", checkbox.checked);
+                    
+                    // Hintergrund aktualisieren
+                    if (checkbox.checked) {
+                        label.classList.add("active");
+                    } else {
+                        label.classList.remove("active");
+                    }
                 });
             });
         });
@@ -102,4 +104,3 @@
 
 </body>
 </html>
-
