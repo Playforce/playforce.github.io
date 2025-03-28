@@ -61,6 +61,10 @@
         let pipeWidth = 50, pipeGap = 140, gameSpeed = 2;
         let death = tode();
 
+        if (localStorage.getItem("hardMode") === "true") {
+            pipeGap = 90;
+        }
+
         function resetGame() {
             if (localStorage.getItem("playerName") === null) {
                 let person = prompt("Namen eingeben");
