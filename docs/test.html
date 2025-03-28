@@ -207,7 +207,7 @@
 
             ctx.fillStyle = "black";
             ctx.font = "20px Arial";
-            if (localStorage.getItem("statsInp") === true) {
+            if (localStorage.getItem("statsInp") === "true") {
                 ctx.fillText("Score: " + score, 10, 30);
                 ctx.fillText("Highscore: " + highScore(), 150, 30);
                 ctx.fillText("Zuletzt: " + letzterScore, 10, 50);
