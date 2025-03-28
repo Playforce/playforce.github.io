@@ -170,12 +170,21 @@ input:checked + .slider:before {
             <ul class="nav-links">
                 <!-- Rectangular switch -->
                 <label class="switch">
-                    <input type="checkbox" onclick="click()" id="statsInp">
+                    <input type="checkbox" onclick="click(statsInp)" id="statsInp">
                     <span class="slider"></span>
                 </label>
             </ul>
         </nav>
     </div>
+    <script>
+        function click(type) {
+            if (document.getElementById(type).checked == true) {
+                
+            } else {
+
+            }
+        }
+    </script>
 
 </body>
 </html>
