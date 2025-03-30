@@ -88,70 +88,38 @@
         
         function highScore(score) {
             var saved = 0;
-            if (localStorage.getItem("hardMode") === "true") {
-                try { saved = parseFloat(localStorage.highScoreHard); } catch (e) { saved = 0; }
-            } else {
-                try { saved = parseFloat(localStorage.highScore); } catch (e) { saved = 0; }
-            }
+            try { saved = parseFloat(localStorage.highScore); } catch (e) { saved = 0; }
             if (!(typeof score === 'undefined')) {
                 try { score = parseFloat(score); } catch (e) { score = 0; }
                 if (score>saved) {
                     saved = score;
-                    if (localStorage.getItem("hardMode") === "true") {
-                        localStorage.highScoreHard = '' + score;
-                    } else {
-                        localStorage.highScore = '' + score;
-                    }
-                }
-                saved = score;
-                if (localStorage.getItem("hardMode") === "true") {
-                    localStorage.highScoreHard = '' + score;
-                } else {
                     localStorage.highScore = '' + score;
                 }
+                saved = score;
+                localStorage.highScore = '' + score;
             }
             if (isNaN(saved)) {
                 saved = 0;
-                if (localStorage.getItem("hardMode") === "true") {
-                    localStorage.highScoreHard = '0';
-                } else {
-                    localStorage.highScore = '0';
-                }
+                localStorage.highScore = '0';
             }
             return saved;
         }
 
         function tode(score) {
             var saved = 0;
-            if (localStorage.getItem("hardMode") === "true") {
-                try { saved = parseFloat(localStorage.todeHard); } catch (e) { saved = 0; }
-            } else {
-                try { saved = parseFloat(localStorage.tode); } catch (e) { saved = 0; }
-            }
+            try { saved = parseFloat(localStorage.tode); } catch (e) { saved = 0; }
             if (!(typeof score === 'undefined')) {
                 try { score = parseFloat(score); } catch (e) { score = 0; }
                 if (score>saved) {
                     saved = score;
-                    if (localStorage.getItem("hardMode") === "true") {
-                        localStorage.todeHard = '' + score;
-                    } else {
-                        localStorage.tode = '' + score;
-                    }
-                }
-                saved = score;
-                if (localStorage.getItem("hardMode") === "true") {
-                    localStorage.todeHard = '' + score;
-                } else {
                     localStorage.tode = '' + score;
                 }
+                saved = score;
+                localStorage.tode = '' + score;
             }
             if (isNaN(saved)) {
                 saved = 0;
-                if (localStorage.getItem("hardMode") === "true") {
-                    localStorage.todeHard = '0';
-                } else {
-                    localStorage.tode = '0';
-                }
+                localStorage.tode = '0';
             }
             return saved;
         }
@@ -251,7 +219,6 @@
                 ctx.fillText("Score: " + score, 10, 30);
                 ctx.fillText("Highscore: " + highScore(), 150, 30);
                 ctx.fillText("Zuletzt: " + letzterScore, 10, 50);
-                if (localStorage.g
                 ctx.fillText("Deaths: " + tode(), 10, 70);
                 let name = localStorage.getItem("playerName");
                 ctx.fillText(name, 10, 90);
