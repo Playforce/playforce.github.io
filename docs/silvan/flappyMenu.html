@@ -64,7 +64,7 @@
             HardMode
             <input type="checkbox" id="hardMode" class="option-checkbox">
         </label>
-        <label>
+        <label class="option-label">
             Namen ändern
             <button onclick="changeName()"></button>
         </label>
@@ -74,7 +74,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             const labels = document.querySelectorAll(".option-label");
 
-            changeName() {
+            function changeName() {
                 let person = prompt("Namen eingeben");
                 localStorage.setItem("playerName", person);
             }
