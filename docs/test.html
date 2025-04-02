@@ -1,1 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Luxus-Simulator</title>
+   <style>
+       body {
+           font-family: 'Arial', sans-serif;
+           text-align: center;
+           background-color: #0A0A0A;
+           color: white;
+       }
+       .amex-card {
+           width: 350px;
+           height: 200px;
+           background: linear-gradient(135deg, #E0E0E0, #B0B0B0);
+           border-radius: 15px;
+           margin: 20px auto;
+           padding: 15px;
+           text-align: left;
+           font-weight: bold;
+           font-size: 18px;
+           box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.3);
+           display: flex;
+           flex-direction: column;
+           justify-content: space-between;
+           position: relative;
+       }
+       .amex-logo {
+           position: absolute;
+           top: 15px;
+           right: 15px;
+           font-size: 22px;
+           font-weight: bold;
+           color: #4F4F4F;
+       }
+       .amex-chip {
+           width: 50px;
+           height: 35px;
+           background-color: gold;
+           border-radius: 5px;
+           position: absolute;
+           top: 50px;
+           left: 20px;
+       }
+       .amex-number {
+           font-size: 22px;
+           letter-spacing: 3px;
+           margin-top: 80px;
+       }
+       .amex-holder {
+           font-size: 14px;
+           margin-top: 10px;
+       }
+       .menu {
+           display: flex;
+           justify-content: center;
+           gap: 40px;
+           margin-top: 30px;
+       }
+       .section {
+           border: 2px solid #555;
+           padding: 20px;
+           width: 320px;
+           background-color: #1C1C1C;
+           border-radius: 15px;
+           box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
+       }
+       .menu-button {
+           background: linear-gradient(135deg, #A5ACAF, #1D1F22);
+           color: white;
+           font-size: 20px;
+           font-weight: bold;
+           padding: 15px 30px;
+           border-radius: 10px;
+           border: none;
+           cursor: pointer;
+           width: 200px;
+           margin: 10px;
+           transition: 0.3s;
+       }
+       .menu-button:hover {
+           background: linear-gradient(135deg, #1D1F22, #A5ACAF);
+       }
+       select, button, input {
+           margin-top: 10px;
+           padding: 10px;
+           font-size: 16px;
+           border-radius: 8px;
+           border: none;
+           background-color: #222;
+           color: white;
+           width: 90%;
+       }
+       button {
+           background: linear-gradient(135deg, gold, #FFD700);
+           color: black;
+           font-weight: bold;
+           cursor: pointer;
+           transition: 0.3s;
+           border-radius: 8px;
+       }
+       button:hover {
+           background: linear-gradient(135deg, #FFD700, gold);
+       }
+   </style>
+</head>
+<body>
+   <h1 style="color: gold; font-family: 'Georgia', serif;">Luxus-Simulator</h1>
+   <div class="amex-card">
+       <div class="amex-logo">AMERICAN EXPRESS</div>
+       <div class="amex-chip"></div>
+       <div class="amex-number">3782 822463 10005</div>
+       <div class="amex-holder">CARDHOLDER NAME</div>
+   </div>
+   <h2>Kontostand: <span id="balance">100000</span> €</h2>
+   
+   <div class="menu">
+       <div class="section">
+           <button class="menu-button" onclick="showBankMenu()">Bank Menü</button>
+           <button class="menu-button" onclick="showShopMenu()">Luxusgüter-Shop</button>
+       </div>
+   </div>
 
+   <div class="menu" id="bankMenu" style="display: none;">
+       <div class="section">
+           <h3>Einzahlen / Abheben</h3>
+           <input type="number" id="amount" placeholder="Betrag eingeben">
+           <button onclick="deposit()">Einzahlen</button>
+           <button onclick="withdraw()">Abheben</button>
+       </div>
+   </div>
+
+   <div class="menu" id="shopMenu" style="display: none;">
+       <div class="section">
+           <h3>Luxusgüter-Shop</h3>
+           <select id="category" onchange="updateItems()">
+               <option value="cars">Autos</option>
+               <option value="watches">Uhren</option>
+               <option value="houses">Häuser</option>
+           </select>
+           <select id="brand" onchange="updateModels()"></select>
+           <select id="shopItems"></select>
+           <button onclick="buyItem()">Kaufen</button>
+       </div>
+   </div>
+
+   <script>
+       let balance = 100000;
+       
+       const data = {
+           cars: {
+               Porsche: {"911 Turbo S": 230000, "Taycan Turbo S": 190000},
+               Ferrari: {"LaFerrari": 2500000, "488 Pista": 350000},
+               Lamborghini: {"Huracán": 250000, "Veneno": 3300000},
+               McLaren: {"P1": 1200000, "765LT": 450000},
+               Mercedes: {"G63 AMG": 200000, "SLR McLaren": 500000},
+               AstonMartin: {"DB11": 250000, "Valkyrie": 3000000}
+           },
+           watches: {
+               Rolex: {"Datejust": 10000, "Daytona": 35000},
+               PatekPhilippe: {"Nautilus": 120000, "Grand Complications": 1000000},
+               AudemarsPiguet: {"Royal Oak": 50000}
+           },
+           houses: {
+               "Villa Malibu": 10000000,
+               "Villa Miami": 7000000,
+               "Penthouse Paris": 15000000,
+               "Haus Monaco": 20000000,
+               "Villa Ibiza": 8000000
+           }
+       };
+
+       function updateBalance() {
+           document.getElementById('balance').innerText = balance;
+       }
+
+       function deposit() {
+           let amount = parseInt(document.getElementById('amount').value);
+           if (amount > 0) { balance += amount; updateBalance(); }
+       }
+
+       function withdraw() {
+           let amount = parseInt(document.getElementById('amount').value);
+           if (amount > 0 && balance >= amount) { balance -= amount; updateBalance(); }
+       }
+
+       function showBankMenu() {
+           document.getElementById('bankMenu').style.display = 'block';
+           document.getElementById('shopMenu').style.display = 'none';
+       }
+
+       function showShopMenu() {
+           document.getElementById('shopMenu').style.display = 'block';
+           document.getElementById('bankMenu').style.display = 'none';
+       }
+
+       function updateItems() {
+           const category = document.getElementById('category').value;
+           const brandSelect = document.getElementById('brand');
+           const itemSelect = document.getElementById('shopItems');
+           brandSelect.innerHTML = '';
+           itemSelect.innerHTML = '';
+
+           if (category && data[category]) {
+               const brands = Object.keys(data[category]);
+               brands.forEach(brand => {
+                   const option = document.createElement('option');
+                   option.value = brand;
+                   option.innerText = brand;
+                   brandSelect.appendChild(option);
+               });
+           }
+
+           brandSelect.disabled = false;
+           itemSelect.disabled = true;
+       }
+
+       function updateModels() {
+           const category = document.getElementById('category').value;
+           const brand = document.getElementById('brand').value;
+           const itemSelect = document.getElementById('shopItems');
+           itemSelect.innerHTML = '';
+
+           if (category && brand && data[category][brand]) {
+               const models = Object.keys(data[category][brand]);
+               models.forEach(model => {
+                   const option = document.createElement('option');
+                   option.value = model;
+                   option.innerText = `${model} (€${data[category][brand][model]})`;
+                   itemSelect.appendChild(option);
+               });
+           }
+
+           itemSelect.disabled = false;
+       }
+
+       function buyItem() {
+           const category = document.getElementById('category').value;
+           const brand = document.getElementById('brand').value;
+           const model = document.getElementById('shopItems').value;
+
+           if (category && brand && model) {
+               const price = data[category][brand][model];
+
+               if (price && balance >= price) {
+                   balance -= price;
+                   updateBalance();
+                   alert(`Du hast ${model} für €${price} gekauft!`);
+               } else {
+                   alert('Nicht genug Guthaben!');
+               }
+           }
+       }
+   </script>
+</body>
+</html>
