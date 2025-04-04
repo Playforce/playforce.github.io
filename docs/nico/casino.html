@@ -248,13 +248,13 @@ function updateBlackjack(isFinal = false) {
 
         geld(money);
         document.getElementById("moneyy").innerHTML = money;
+        blackJackDeck = [];
+        playerHand = [];
+        dealerHand = [];
+        updateBlackJack();
     }
 
     document.getElementById("blackjack-status").innerHTML = status;
-    blackJackDeck = [];
-    playerHand = [];
-    dealerHand = [];
-    updateBlackJack();
 }
 
 // ROULETTE LOGIC
