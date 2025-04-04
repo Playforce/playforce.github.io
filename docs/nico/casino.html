@@ -251,7 +251,10 @@ function updateBlackjack(isFinal = false) {
     }
 
     document.getElementById("blackjack-status").innerHTML = status;
-    dealBlackJack();
+    blackJackDeck = [];
+    playerHand = [];
+    dealerHand = [];
+    updateBlackJack();
 }
 
 // ROULETTE LOGIC
