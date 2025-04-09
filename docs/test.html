@@ -1,258 +1,210 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Luxus-Simulator</title>
-   <style>
-       body {
-           font-family: 'Arial', sans-serif;
-           text-align: center;
-           background-color: #0A0A0A;
-           color: white;
-       }
-       .amex-card {
-           width: 350px;
-           height: 200px;
-           background: linear-gradient(135deg, #E0E0E0, #B0B0B0);
-           border-radius: 15px;
-           margin: 20px auto;
-           padding: 15px;
-           text-align: left;
-           font-weight: bold;
-           font-size: 18px;
-           box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.3);
-           display: flex;
-           flex-direction: column;
-           justify-content: space-between;
-           position: relative;
-       }
-       .amex-logo {
-           position: absolute;
-           top: 15px;
-           right: 15px;
-           font-size: 22px;
-           font-weight: bold;
-           color: #4F4F4F;
-       }
-       .amex-chip {
-           width: 50px;
-           height: 35px;
-           background-color: gold;
-           border-radius: 5px;
-           position: absolute;
-           top: 50px;
-           left: 20px;
-       }
-       .amex-number {
-           font-size: 22px;
-           letter-spacing: 3px;
-           margin-top: 80px;
-       }
-       .amex-holder {
-           font-size: 14px;
-           margin-top: 10px;
-       }
-       .menu {
-           display: flex;
-           justify-content: center;
-           gap: 40px;
-           margin-top: 30px;
-       }
-       .section {
-           border: 2px solid #555;
-           padding: 20px;
-           width: 320px;
-           background-color: #1C1C1C;
-           border-radius: 15px;
-           box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
-       }
-       .menu-button {
-           background: linear-gradient(135deg, #A5ACAF, #1D1F22);
-           color: white;
-           font-size: 20px;
-           font-weight: bold;
-           padding: 15px 30px;
-           border-radius: 10px;
-           border: none;
-           cursor: pointer;
-           width: 200px;
-           margin: 10px;
-           transition: 0.3s;
-       }
-       .menu-button:hover {
-           background: linear-gradient(135deg, #1D1F22, #A5ACAF);
-       }
-       select, button, input {
-           margin-top: 10px;
-           padding: 10px;
-           font-size: 16px;
-           border-radius: 8px;
-           border: none;
-           background-color: #222;
-           color: white;
-           width: 90%;
-       }
-       button {
-           background: linear-gradient(135deg, gold, #FFD700);
-           color: black;
-           font-weight: bold;
-           cursor: pointer;
-           transition: 0.3s;
-           border-radius: 8px;
-       }
-       button:hover {
-           background: linear-gradient(135deg, #FFD700, gold);
-       }
-   </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tetris</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      border: 2px solid #fff;
+      margin-top: 20px;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-   <h1 style="color: gold; font-family: 'Georgia', serif;">Luxus-Simulator</h1>
-   <div class="amex-card">
-       <div class="amex-logo">AMERICAN EXPRESS</div>
-       <div class="amex-chip"></div>
-       <div class="amex-number">3782 822463 10005</div>
-       <div class="amex-holder">CARDHOLDER NAME</div>
-   </div>
-   <h2>Kontostand: <span id="balance">100000</span> €</h2>
-   
-   <div class="menu">
-       <div class="section">
-           <button class="menu-button" onclick="showBankMenu()">Bank Menü</button>
-           <button class="menu-button" onclick="showShopMenu()">Luxusgüter-Shop</button>
-       </div>
-   </div>
+  <h1>Tetris</h1>
+  <canvas width="240" height="400" id="tetris"></canvas>
 
-   <div class="menu" id="bankMenu" style="display: none;">
-       <div class="section">
-           <h3>Einzahlen / Abheben</h3>
-           <input type="number" id="amount" placeholder="Betrag eingeben">
-           <button onclick="deposit()">Einzahlen</button>
-           <button onclick="withdraw()">Abheben</button>
-       </div>
-   </div>
+  <script>
+    const canvas = document.getElementById('tetris');
+    const context = canvas.getContext('2d');
+    context.scale(20, 20);
 
-   <div class="menu" id="shopMenu" style="display: none;">
-       <div class="section">
-           <h3>Luxusgüter-Shop</h3>
-           <select id="category" onchange="updateItems()">
-               <option value="cars">Autos</option>
-               <option value="watches">Uhren</option>
-               <option value="houses">Häuser</option>
-           </select>
-           <select id="brand" onchange="updateModels()"></select>
-           <select id="shopItems"></select>
-           <button onclick="buyItem()">Kaufen</button>
-       </div>
-   </div>
+    const matrix = {
+      T: [[0,1,0],[1,1,1],[0,0,0]],
+      O: [[1,1],[1,1]],
+      L: [[0,0,1],[1,1,1],[0,0,0]],
+      J: [[1,0,0],[1,1,1],[0,0,0]],
+      I: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+      S: [[0,1,1],[1,1,0],[0,0,0]],
+      Z: [[1,1,0],[0,1,1],[0,0,0]],
+    };
 
-   <script>
-       let balance = 100000;
-       
-       const data = {
-           cars: {
-               Porsche: {"911 Turbo S": 230000, "Taycan Turbo S": 190000},
-               Ferrari: {"LaFerrari": 2500000, "488 Pista": 350000},
-               Lamborghini: {"Huracán": 250000, "Veneno": 3300000},
-               McLaren: {"P1": 1200000, "765LT": 450000},
-               Mercedes: {"G63 AMG": 200000, "SLR McLaren": 500000},
-               AstonMartin: {"DB11": 250000, "Valkyrie": 3000000}
-           },
-           watches: {
-               Rolex: {"Datejust": 10000, "Daytona": 35000},
-               PatekPhilippe: {"Nautilus": 120000, "Grand Complications": 1000000},
-               AudemarsPiguet: {"Royal Oak": 50000}
-           },
-           houses: {
-               "Villa Malibu": 10000000,
-               "Villa Miami": 7000000,
-               "Penthouse Paris": 15000000,
-               "Haus Monaco": 20000000,
-               "Villa Ibiza": 8000000
-           }
-       };
+    function createMatrix(w, h) {
+      const matrix = [];
+      while (h--) matrix.push(new Array(w).fill(0));
+      return matrix;
+    }
 
-       function updateBalance() {
-           document.getElementById('balance').innerText = balance;
-       }
+    function drawMatrix(matrix, offset) {
+      matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value) {
+            context.fillStyle = colors[value];
+            context.fillRect(x + offset.x, y + offset.y, 1, 1);
+          }
+        });
+      });
+    }
 
-       function deposit() {
-           let amount = parseInt(document.getElementById('amount').value);
-           if (amount > 0) { balance += amount; updateBalance(); }
-       }
+    function draw() {
+      context.fillStyle = '#000';
+      context.fillRect(0, 0, canvas.width, canvas.height);
 
-       function withdraw() {
-           let amount = parseInt(document.getElementById('amount').value);
-           if (amount > 0 && balance >= amount) { balance -= amount; updateBalance(); }
-       }
+      drawMatrix(arena, {x:0,y:0});
+      drawMatrix(player.matrix, player.pos);
+    }
 
-       function showBankMenu() {
-           document.getElementById('bankMenu').style.display = 'block';
-           document.getElementById('shopMenu').style.display = 'none';
-       }
+    function merge(arena, player) {
+      player.matrix.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value) {
+            arena[y + player.pos.y][x + player.pos.x] = value;
+          }
+        });
+      });
+    }
 
-       function showShopMenu() {
-           document.getElementById('shopMenu').style.display = 'block';
-           document.getElementById('bankMenu').style.display = 'none';
-       }
+    function collide(arena, player) {
+      const m = player.matrix;
+      const o = player.pos;
+      for (let y = 0; y < m.length; ++y) {
+        for (let x = 0; x < m[y].length; ++x) {
+          if (m[y][x] && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
 
-       function updateItems() {
-           const category = document.getElementById('category').value;
-           const brandSelect = document.getElementById('brand');
-           const itemSelect = document.getElementById('shopItems');
-           brandSelect.innerHTML = '';
-           itemSelect.innerHTML = '';
+    function rotate(matrix, dir) {
+      for (let y = 0; y < matrix.length; ++y) {
+        for (let x = 0; x < y; ++x) {
+          [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
+        }
+      }
+      if (dir > 0) matrix.forEach(row => row.reverse());
+      else matrix.reverse();
+    }
 
-           if (category && data[category]) {
-               const brands = Object.keys(data[category]);
-               brands.forEach(brand => {
-                   const option = document.createElement('option');
-                   option.value = brand;
-                   option.innerText = brand;
-                   brandSelect.appendChild(option);
-               });
-           }
+    function playerDrop() {
+      player.pos.y++;
+      if (collide(arena, player)) {
+        player.pos.y--;
+        merge(arena, player);
+        playerReset();
+        arenaSweep();
+      }
+      dropCounter = 0;
+    }
 
-           brandSelect.disabled = false;
-           itemSelect.disabled = true;
-       }
+    function playerMove(dir) {
+      player.pos.x += dir;
+      if (collide(arena, player)) player.pos.x -= dir;
+    }
 
-       function updateModels() {
-           const category = document.getElementById('category').value;
-           const brand = document.getElementById('brand').value;
-           const itemSelect = document.getElementById('shopItems');
-           itemSelect.innerHTML = '';
+    function playerRotate(dir) {
+      const pos = player.pos.x;
+      let offset = 1;
+      rotate(player.matrix, dir);
+      while (collide(arena, player)) {
+        player.pos.x += offset;
+        offset = -(offset + (offset > 0 ? 1 : -1));
+        if (offset > player.matrix[0].length) {
+          rotate(player.matrix, -dir);
+          player.pos.x = pos;
+          return;
+        }
+      }
+    }
 
-           if (category && brand && data[category][brand]) {
-               const models = Object.keys(data[category][brand]);
-               models.forEach(model => {
-                   const option = document.createElement('option');
-                   option.value = model;
-                   option.innerText = `${model} (€${data[category][brand][model]})`;
-                   itemSelect.appendChild(option);
-               });
-           }
+    function arenaSweep() {
+      outer: for (let y = arena.length - 1; y >= 0; --y) {
+        for (let x = 0; x < arena[y].length; ++x) {
+          if (arena[y][x] === 0) continue outer;
+        }
+        const row = arena.splice(y, 1)[0].fill(0);
+        arena.unshift(row);
+        y++;
+      }
+    }
 
-           itemSelect.disabled = false;
-       }
+    function playerReset() {
+      const pieces = 'TJLOSZI';
+      const type = pieces[Math.floor(Math.random() * pieces.length)];
+      player.matrix = matrix[type].map(row => [...row]);
+      player.pos.y = 0;
+      player.pos.x = Math.floor((arena[0].length / 2) - (player.matrix[0].length / 2));
+      if (collide(arena, player)) {
+        arena.forEach(row => row.fill(0));
+      }
+    }
 
-       function buyItem() {
-           const category = document.getElementById('category').value;
-           const brand = document.getElementById('brand').value;
-           const model = document.getElementById('shopItems').value;
+    const colors = [
+      null,
+      '#FF0D72',
+      '#0DC2FF',
+      '#0DFF72',
+      '#F538FF',
+      '#FF8E0D',
+      '#FFE138',
+      '#3877FF'
+    ];
 
-           if (category && brand && model) {
-               const price = data[category][brand][model];
+    const arena = createMatrix(12, 20);
 
-               if (price && balance >= price) {
-                   balance -= price;
-                   updateBalance();
-                   alert(`Du hast ${model} für €${price} gekauft!`);
-               } else {
-                   alert('Nicht genug Guthaben!');
-               }
-           }
-       }
-   </script>
+    const player = {
+      pos: {x: 0, y: 0},
+      matrix: null,
+    };
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'ArrowLeft') {
+        playerMove(-1);
+      } else if (event.key === 'ArrowRight') {
+        playerMove(1);
+      } else if (event.key === 'ArrowDown') {
+        playerDrop();
+      } else if (event.key === 'q') {
+        playerRotate(-1);
+      } else if (event.key === 'w') {
+        playerRotate(1);
+      }
+    });
+
+    let dropCounter = 0;
+    let dropInterval = 1000;
+
+    let lastTime = 0;
+    function update(time = 0) {
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      dropCounter += deltaTime;
+      if (dropCounter > dropInterval) {
+        playerDrop();
+      }
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    playerReset();
+    update();
+  </script>
 </body>
 </html>
