@@ -32,6 +32,7 @@
 <body>
   <h1>Tetris</h1>
   <div id="score">Score: 0</div>
+  <div id="highscore">Highscore: 0</div>
   <canvas width="240" height="400" id="tetris"></canvas>
 
   <script>
@@ -39,6 +40,25 @@
     const context = canvas.getContext('2d');
     context.scale(20, 20);
     let score = 0;
+
+    function highScoreTetris(score) {
+      var saved = 0;
+      try { saved = parseFloat(localStorage.highScoreTetris); } catch (e) { saved = 0; }
+      if (!(typeof score === 'undefined')) {
+        try { score = parseFloat(score); } catch (e) { score = 0; }
+        if (score>saved) {
+          saved = score;
+          localStorage.highScoreTetris = '' + score;
+        }
+        saved = score;
+        localStorage.highScoreTetris = '' + score;
+      }
+      if (isNaN(saved)) {
+        saved = 0;
+        localStorage.highScoreTetris = '0'
+      }
+      return saved;
+    }
 
     const matrix = {
       T: [[0,1,0],[1,1,1],[0,0,0]],
@@ -153,6 +173,7 @@
         score += rowCount * 10;
         rowCount *= 2;
       }
+      highScoreTetris(score);
     }
 
 
@@ -213,6 +234,7 @@
 
       draw();
       document.getElementById('score').innerText = 'Score: ' + score;
+      document.getElementById('highscore').innerText = 'Highscore: ' + highScoreTetris();
       requestAnimationFrame(update);
     }
 
