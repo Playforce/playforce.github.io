@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Pong 2 Spieler</title>
+  <title>Pong mit Countdown</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; background: #000; overflow: hidden; }
@@ -10,12 +10,12 @@
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="500"></canvas>
+  <canvas id="gameCanvas" width="500" height="300"></canvas>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    const paddleWidth = 10, paddleHeight = 100;
+    const paddleWidth = 10, paddleHeight = 800;
     const ballSize = 10;
 
     const leftPaddle = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
@@ -23,6 +23,17 @@
     const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 5, dy: 3 };
 
     let leftScore = 0, rightScore = 0;
+    let countdown = 3;
+    let gameStarted = false;
+
+    // Countdown-Logik
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown === 0) {
+        gameStarted = true;
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
 
     function drawRect(x, y, w, h, color = "#FFF") {
       ctx.fillStyle = color;
@@ -41,6 +52,15 @@
       ctx.fillText(rightScore, canvas.width * 3 / 4, 30);
     }
 
+    function drawCountdown() {
+      if (!gameStarted) {
+        ctx.font = "60px Arial";
+        ctx.fillStyle = "#FFF";
+        ctx.textAlign = "center";
+        ctx.fillText(countdown > 0 ? countdown : "LOS!", canvas.width / 2, canvas.height / 2);
+      }
+    }
+
     function update() {
       // Paddles bewegen
       leftPaddle.y += leftPaddle.dy;
@@ -49,6 +69,8 @@
       // Begrenzungen
       leftPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddle.y));
       rightPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddle.y));
+
+      if (!gameStarted) return;
 
       // Ball bewegen
       ball.x += ball.dx;
@@ -91,6 +113,11 @@
       ball.y = canvas.height / 2;
       ball.dx *= -1;
       ball.dy = (Math.random() > 0.5 ? 3 : -3);
+
+      // Countdown nach Punkt erneut starten (optional)
+      // countdown = 3;
+      // gameStarted = false;
+      // setInterval...
     }
 
     function draw() {
@@ -99,6 +126,7 @@
       drawRect(rightPaddle.x, rightPaddle.y, paddleWidth, paddleHeight);
       drawBall();
       drawScore();
+      drawCountdown();
     }
 
     function loop() {
