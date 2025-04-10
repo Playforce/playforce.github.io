@@ -2,25 +2,44 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Pong mit Countdown</title>
+  <title>Pong</title>
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; background: #000; overflow: hidden; }
-    canvas { display: block; margin: 0 auto; background: #111; }
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 48px;
+    }
+    canvas {
+      background: #111;
+      display: block;
+      border: 2px solid #fff;
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="500" height="300"></canvas>
+  <h1>Pong</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    const paddleWidth = 10, paddleHeight = 800;
+    const paddleWidth = 10, paddleHeight = 80;
     const ballSize = 10;
 
     const leftPaddle = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
     const rightPaddle = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
-    const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 5, dy: 3 };
+    const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 3 };
 
     let leftScore = 0, rightScore = 0;
     let countdown = 3;
@@ -46,7 +65,7 @@
     }
 
     function drawScore() {
-      ctx.font = "30px Arial";
+      ctx.font = "24px Arial";
       ctx.fillStyle = "#FFF";
       ctx.fillText(leftScore, canvas.width / 4, 30);
       ctx.fillText(rightScore, canvas.width * 3 / 4, 30);
@@ -62,7 +81,6 @@
     }
 
     function update() {
-      // Paddles bewegen
       leftPaddle.y += leftPaddle.dy;
       rightPaddle.y += rightPaddle.dy;
 
@@ -72,7 +90,7 @@
 
       if (!gameStarted) return;
 
-      // Ball bewegen
+      // Ballbewegung
       ball.x += ball.dx;
       ball.y += ball.dy;
 
@@ -81,7 +99,7 @@
         ball.dy *= -1;
       }
 
-      // Schläger Kollision
+      // Paddle-Kollisionen
       if (ball.x <= leftPaddle.x + paddleWidth &&
           ball.y + ballSize >= leftPaddle.y &&
           ball.y <= leftPaddle.y + paddleHeight) {
@@ -113,11 +131,6 @@
       ball.y = canvas.height / 2;
       ball.dx *= -1;
       ball.dy = (Math.random() > 0.5 ? 3 : -3);
-
-      // Countdown nach Punkt erneut starten (optional)
-      // countdown = 3;
-      // gameStarted = false;
-      // setInterval...
     }
 
     function draw() {
