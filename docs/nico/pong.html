@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Pong</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 6vw;
+      margin-bottom: 1vh;
+    }
+
+    canvas {
+      background: #111;
+      border: 2px solid #fff;
+      width: 90vw;
+      height: 70vh;
+      max-width: 600px;
+      max-height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pong</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const paddleWidth = 10, paddleHeight = 80;
+    const ballSize = 10;
+
+    const leftPaddle = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+    const rightPaddle = { x: canvas.width - paddleWidth - 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+    const ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 3 };
+
+    let leftScore = 0, rightScore = 0;
+    let countdown = 3;
+    let gameStarted = false;
+
+    const countdownInterval = setInterval(() => {
+      countdown--;
+      if (countdown === 0) {
+        gameStarted = true;
+        clearInterval(countdownInterval);
+      }
+    }, 1000);
+
+    function drawRect(x, y, w, h, color = "#FFF") {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function drawBall() {
+      ctx.fillStyle = "#FFF";
+      ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
+    }
+
+    function drawScore() {
+      ctx.font = "24px Arial";
+      ctx.fillStyle = "#FFF";
+      ctx.fillText(leftScore, canvas.width / 4, 30);
+      ctx.fillText(rightScore, canvas.width * 3 / 4, 30);
+    }
+
+    function drawCountdown() {
+      if (!gameStarted) {
+        ctx.font = "60px Arial";
+        ctx.fillStyle = "#FFF";
+        ctx.textAlign = "center";
+        ctx.fillText(countdown > 0 ? countdown : "LOS!", canvas.width / 2, canvas.height / 2);
+      }
+    }
+
+    function update() {
+      leftPaddle.y += leftPaddle.dy;
+      rightPaddle.y += rightPaddle.dy;
+
+      // Begrenzungen
+      leftPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddle.y));
+      rightPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddle.y));
+
+      if (!gameStarted) return;
+
+      // Ballbewegung
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      // Oben/Unten prallen
+      if (ball.y <= 0 || ball.y + ballSize >= canvas.height) {
+        ball.dy *= -1;
+      }
+
+      // Paddle-Kollisionen
+      if (ball.x <= leftPaddle.x + paddleWidth &&
+          ball.y + ballSize >= leftPaddle.y &&
+          ball.y <= leftPaddle.y + paddleHeight) {
+        ball.dx *= -1;
+        ball.x = leftPaddle.x + paddleWidth;
+      }
+
+      if (ball.x + ballSize >= rightPaddle.x &&
+          ball.y + ballSize >= rightPaddle.y &&
+          ball.y <= rightPaddle.y + paddleHeight) {
+        ball.dx *= -1;
+        ball.x = rightPaddle.x - ballSize;
+      }
+
+      // Punkte
+      if (ball.x < 0) {
+        rightScore++;
+        resetBall();
+      }
+
+      if (ball.x > canvas.width) {
+        leftScore++;
+        resetBall();
+      }
+    }
+
+    function resetBall() {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dx *= -1;
+      ball.dy = (Math.random() > 0.5 ? 3 : -3);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawRect(leftPaddle.x, leftPaddle.y, paddleWidth, paddleHeight);
+      drawRect(rightPaddle.x, rightPaddle.y, paddleWidth, paddleHeight);
+      drawBall();
+      drawScore();
+      drawCountdown();
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "w") leftPaddle.dy = -5;
+      if (e.key === "s") leftPaddle.dy = 5;
+      if (e.key === "ArrowUp") rightPaddle.dy = -5;
+      if (e.key === "ArrowDown") rightPaddle.dy = 5;
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "w" || e.key === "s") leftPaddle.dy = 0;
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") rightPaddle.dy = 0;
+    });
+
+    loop();
+  </script>
+</body>
+</html>
