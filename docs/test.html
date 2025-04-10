@@ -4,26 +4,39 @@
   <meta charset="UTF-8">
   <title>Pong</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
+    * {
+      box-sizing: border-box;
+      padding: 0;
       margin: 0;
+    }
+
+    html, body {
+      height: 100%;
       background: #000;
       color: #fff;
       font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    body {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100vh;
     }
+
     h1 {
-      margin-bottom: 20px;
-      font-size: 48px;
+      font-size: 6vw;
+      margin-bottom: 1vh;
     }
+
     canvas {
       background: #111;
-      display: block;
       border: 2px solid #fff;
+      width: 90vw;
+      height: 70vh;
+      max-width: 600px;
+      max-height: 400px;
     }
   </style>
 </head>
@@ -45,7 +58,6 @@
     let countdown = 3;
     let gameStarted = false;
 
-    // Countdown-Logik
     const countdownInterval = setInterval(() => {
       countdown--;
       if (countdown === 0) {
