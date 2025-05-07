@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Tetris</title>
   <style>
     body {
@@ -15,6 +15,10 @@
       margin: 0;
       padding: 0;
     }
+    * {
+      touch-action: manipulation;
+    }
+
     canvas {
       border: 2px solid #fff;
       margin-top: 20px;
@@ -26,6 +30,24 @@
       font-size: 1.5rem;
       margin-top: 10px;
     }
+    .buttons {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .knopf {
+      display: block;
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+      width: 2rem;
+      margin: 2px 2px 2px 2px;
+    }
 
   </style>
 </head>
@@ -34,6 +56,16 @@
   <div id="score">Score: 0</div>
   <div id="highscore">Highscore: 0</div>
   <canvas width="240" height="400" id="tetris"></canvas>
+  <div class="buttons">
+    <button class="knopf" onclick="playerHardDrop()">D</button>
+    <button class="knopf" onclick="playerRotate(1)">w</button>
+    <button class="knopf" onclick="playerHardDrop()">D</button>
+  </div>
+  <div class="buttons">
+    <button class="knopf" onclick="playerMove(-1)">a</button>
+    <button class="knopf" onclick="playerDrop()">s</button>
+    <button class="knopf" onclick="playerMove(1)">d</button>
+  </div>
 
   <script>
     const canvas = document.getElementById('tetris');
@@ -217,6 +249,11 @@
       pos: {x: 0, y: 0},
       matrix: null,
     };
+
+    document.addEventListener('dblclick', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+
 
     document.addEventListener('keydown', event => {
       if (event.key === 'ArrowLeft') {
