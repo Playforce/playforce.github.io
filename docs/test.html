@@ -250,6 +250,11 @@
       matrix: null,
     };
 
+    document.addEventListener('dblclick', function(e) {
+      e.preventDefault();
+    }, { passive: false });
+
+
     document.addEventListener('keydown', event => {
       if (event.key === 'ArrowLeft') {
         playerMove(-1);
