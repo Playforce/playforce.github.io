@@ -27,6 +27,18 @@
       margin-top: 10px;
     }
 
+    .knopf {
+      display: block;
+      text-align: center;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
   </style>
 </head>
 <body>
@@ -34,6 +46,16 @@
   <div id="score">Score: 0</div>
   <div id="highscore">Highscore: 0</div>
   <canvas width="240" height="400" id="tetris"></canvas>
+  <div>
+    <button>.</button>
+    <button>w</button>
+    <button>.</button>
+  </div>
+  <div>
+    <button>a</button>
+    <button>s</button>
+    <button>d</button>
+  </div>
 
   <script>
     const canvas = document.getElementById('tetris');
