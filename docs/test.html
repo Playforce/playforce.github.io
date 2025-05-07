@@ -54,13 +54,13 @@
   <canvas width="240" height="400" id="tetris"></canvas>
   <div class="buttons">
     <button class="knopf"></button>
-    <button class="knopf">w</button>
+    <button class="knopf" onclick="playerRotate(1)">w</button>
     <button class="knopf"></button>
   </div>
   <div class="buttons">
-    <button class="knopf">a</button>
-    <button class="knopf">s</button>
-    <button class="knopf">d</button>
+    <button class="knopf" onclick="playerMove(-1)">a</button>
+    <button class="knopf" onclick="playerDrop()">s</button>
+    <button class="knopf" onclick="playerMove(1)">d</button>
   </div>
 
   <script>
