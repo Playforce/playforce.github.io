@@ -28,7 +28,7 @@
     }
     .buttons {
       display: flex;
-      justify-content: center;
+      flex-direction: row;
     }
 
     .knopf {
@@ -51,12 +51,12 @@
   <div id="score">Score: 0</div>
   <div id="highscore">Highscore: 0</div>
   <canvas width="240" height="400" id="tetris"></canvas>
-  <div>
-    <button class="knopf">.</button>
+  <div class="buttons">
+    <button class="knopf"></button>
     <button class="knopf">w</button>
-    <button class="knopf">.</button>
+    <button class="knopf"></button>
   </div>
-  <div>
+  <div class="buttons">
     <button class="knopf">a</button>
     <button class="knopf">s</button>
     <button class="knopf">d</button>
