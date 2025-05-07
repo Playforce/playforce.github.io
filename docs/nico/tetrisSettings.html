@@ -61,6 +61,15 @@
       font-size: 18px;
       font-weight: bold;
     }
+
+    .edit-button {
+      margin-top: 10px;
+      background-color: #28a745;
+    }
+
+    .edit-button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
@@ -80,10 +89,10 @@
 
     <!-- Buttons to Set Char -->
     <div class="buttons-container">
-      <button class="settings-button" onclick="setChar('A')">A</button>
-      <button class="settings-button" onclick="setChar('B')">B</button>
-      <button class="settings-button" onclick="setChar('C')">C</button>
-      <button class="settings-button" onclick="setChar('D')">D</button>
+      <button class="settings-button" id="buttonA" onclick="editChar('A')">A</button>
+      <button class="settings-button" id="buttonB" onclick="editChar('B')">B</button>
+      <button class="settings-button" id="buttonC" onclick="editChar('C')">C</button>
+      <button class="settings-button" id="buttonD" onclick="editChar('D')">D</button>
     </div>
 
     <!-- Output Char -->
@@ -91,6 +100,29 @@
   </div>
 
   <script>
+    // Store default characters
+    const defaultChars = {
+      'A': 'A',
+      'B': 'B',
+      'C': 'C',
+      'D': 'D'
+    };
+
+    // Function to update the button character
+    function editChar(buttonId) {
+      const currentChar = defaultChars[buttonId];
+      const newChar = prompt(`Change character for ${buttonId}:`, currentChar);
+      
+      // If a new character is entered, update the button text and the default character
+      if (newChar && newChar.length === 1) {
+        defaultChars[buttonId] = newChar;
+        document.getElementById(`button${buttonId}`).textContent = newChar;
+      } else {
+        alert("Please enter a single character.");
+      }
+    }
+
+    // Function to display selected character (on click of buttons)
     function setChar(char) {
       document.getElementById('charOutput').textContent = `Selected Char: ${char}`;
     }
