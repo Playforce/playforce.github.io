@@ -1,1 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+      margin: 0;
+    }
 
+    .settings-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+
+    .dropdown-container {
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .buttons-container {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .settings-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 60px;
+    }
+
+    .settings-button:hover {
+      background-color: #0056b3;
+    }
+
+    .char-output {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="settings-container">
+    <h2>Settings</h2>
+    
+    <!-- Dropdown Pop-Up Menu -->
+    <div class="dropdown-container">
+      <select id="dropdownMenu">
+        <option value="default">Choose an option</option>
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+      </select>
+    </div>
+
+    <!-- Buttons to Set Char -->
+    <div class="buttons-container">
+      <button class="settings-button" onclick="setChar('A')">A</button>
+      <button class="settings-button" onclick="setChar('B')">B</button>
+      <button class="settings-button" onclick="setChar('C')">C</button>
+      <button class="settings-button" onclick="setChar('D')">D</button>
+    </div>
+
+    <!-- Output Char -->
+    <div class="char-output" id="charOutput">Selected Char: None</div>
+  </div>
+
+  <script>
+    function setChar(char) {
+      document.getElementById('charOutput').textContent = `Selected Char: ${char}`;
+    }
+  </script>
+</body>
+</html>
