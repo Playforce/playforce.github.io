@@ -142,6 +142,25 @@
       }
     }
 
+    function highScore(score) {
+        var saved = 0;
+        try { saved = parseFloat(localStorage.highScoreBlockblast); } catch (e) { saved = 0; }
+        if (!(typeof score === 'undefined')) {
+            try { score = parseFloat(score); } catch (e) { score = 0; }
+            if (score>saved) {
+                saved = score;
+                localStorage.highScoreBlockblast = '' + score;
+           }
+            saved = score;
+            localStorage.highScoreBlockblast = '' + score;
+        }
+        if (isNaN(saved)) {
+            saved = 0;
+            localStorage.highScoreBlockblast = '0';
+        }
+        return saved;
+    }
+
     function drop(e) {
       const index = parseInt(e.target.dataset.index);
       const shape = JSON.parse(e.dataTransfer.getData('shape'));
@@ -168,6 +187,7 @@
         positions.forEach(cell => cell.classList.add('filled'));
         score += positions.length;
         scoreDisplay.textContent = `Score: ${score}`;
+        highScore(score);
         highScoreDisplay.textContent = 'High-Score: ' + highScore();
         checkFullLines();
         generatePieces();
