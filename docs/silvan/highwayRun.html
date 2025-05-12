@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Highway Run 2player</title>
+  <style>
+    html, body { margin:0; padding:0; overflow:hidden; background:#222; color:#fff; font-family: sans-serif; }
+    canvas { display:block; }
+    .info { position:absolute; z-index:10; font-size:18px; }
+    #score1 { left:10px; top:10px; }
+    #lives1 { left:10px; bottom:10px; }
+    #controls1 { left:10px; top:40px; }
+    #score2 { right:10px; top:10px; }
+    #lives2 { right:10px; bottom:10px; }
+    #controls2 { right:10px; top:40px; text-align:right; }
+    #startScreen, #endScreen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:20; }
+    #startScreen select, #startScreen button, #endScreen button { font-size:18px; padding:8px 16px; margin:8px; }
+    .touch-btn { display:inline-block; width:50px; height:50px; margin:4px; background:rgba(255,255,255,0.1); border:2px solid #fff; border-radius:8px; text-align:center; line-height:46px; font-size:24px; user-select:none; }
+  </style>
+</head>
+<body>
+  <!-- HUD -->
+  <div id="score1" class="info">S1 Zeit: 0.00s</div>
+  <div id="lives1" class="info">S1 Leben: 10</div>
+  <div id="controls1" class="info">
+    <div id="p1Up" class="touch-btn">↑</div>
+    <div id="p1Down" class="touch-btn">↓</div>
+  <div id="score2" class="info">S2 Zeit: 0.00s</div>
+  <div id="lives2" class="info">S2 Leben: 10</div>
+  Steuerung: S1 = Q / E -------- S2 = U / O
+
+  <div id="controls2" class="info">
+    <div id="p2Up" class="touch-btn">↑</div>
+    <div id="p2Down" class="touch-btn">↓</div>
+  </div>
+
+  <!-- Canvas -->
+  <canvas id="game"></canvas>
+
+  <!-- Start Screen -->
+  <div id="startScreen">
+    <h1>2-Spieler Auto Spiel</h1>
+    <label for="difficulty">Schwierigkeitsgrad:</label>
+    <select id="difficulty">
+      <option value="easy">Leicht</option>
+      <option value="medium" selected>Mittel</option>
+      <option value="hard">Schwer</option>
+    </select>
+    <button id="startBtn">Start</button>
+    <div id="highscoreDisplay">Bestzeit: --</div>
+  </div>
+
+  <!-- End Screen -->
+  <div id="endScreen" style="display:none;">
+    <h2 id="resultText"></h2>
+    <div id="newHighscore" style="margin:8px 0;"></div>
+    <button id="restartBtn">Erneut Spielen</button>
+  </div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W = window.innerWidth, H = window.innerHeight;
+canvas.width = W; canvas.height = H;
+window.addEventListener('resize', () => { W=innerWidth; H=innerHeight; canvas.width=W; canvas.height=H; computeGeometry(); });
+
+// Geometry
+const laneCount = 3;
+let roadHeight, roadY, laneHeight, stepSize, carSize;
+function computeGeometry(){ roadHeight = H*0.3; roadY=(H-roadHeight)/2; laneHeight=roadHeight/laneCount; stepSize=laneHeight/4; carSize=laneHeight*0.8; }
+computeGeometry();
+
+// Game state
+const maxLives = 10;
+let player1, player2;
+let obstacles = [], frame=0;
+let spawnInterval, speeds;
+const keys = {};
+let running = false;
+
+// DOM
+const score1El = document.getElementById('score1');
+const score2El = document.getElementById('score2');
+const lives1El = document.getElementById('lives1');
+const lives2El = document.getElementById('lives2');
+const startScreen = document.getElementById('startScreen');
+const endScreen = document.getElementById('endScreen');
+const startBtn = document.getElementById('startBtn');
+const restartBtn = document.getElementById('restartBtn');
+const highscoreDisplay = document.getElementById('highscoreDisplay');
+const resultText = document.getElementById('resultText');
+const newHighscore = document.getElementById('newHighscore');
+const difficultySelect = document.getElementById('difficulty');
+
+// Touch buttons
+['p1Up','p1Down','p2Up','p2Down'].forEach(id => {
+  const btn = document.getElementById(id);
+  btn.addEventListener('touchstart', e=> { e.preventDefault(); handleTouch(id); });
+  btn.addEventListener('mousedown', ()=> handleTouch(id));
+});
+function handleTouch(id) {
+  if(!running) return;
+  if(id==='p1Up' && player1.step>0) player1.step--;
+  if(id==='p1Down' && player1.step<laneCount*4) player1.step++;
+  if(id==='p2Up' && player2.step>0) player2.step--;
+  if(id==='p2Down' && player2.step<laneCount*4) player2.step++;
+}
+
+// Keyboard
+document.addEventListener('keydown', e=> {
+  keys[e.key.toLowerCase()] = true;
+});
+
+document.addEventListener('keyup', e=> {
+  keys[e.key.toLowerCase()] = false;
+});
+
+// Initialize
+function initGame(){
+  player1 = { step:6, lives:maxLives, start:Date.now(), stopTime:null, color:'red' };
+  player2 = { step:6, lives:maxLives, start:Date.now(), stopTime:null, color:'blue' };
+  obstacles = [];
+  frame = 0;
+  const diff = difficultySelect.value;
+  if(diff==='easy'){ spawnInterval=110; speeds={hole:2, construction:1.5, accident:2, block:1}; }
+  else if(diff==='hard'){ spawnInterval=60; speeds={hole:6, construction:5.25, accident:6, block:4.75}; }
+  else { spawnInterval=80; speeds={hole:3, construction:2, accident:2.5, block:2}; }
+  running = true;
+  readHighscore();
+  startScreen.style.display='none';
+  endScreen.style.display='none';
+  loop();
+}
+
+startBtn.onclick = initGame;
+restartBtn.onclick = () => location.reload();
+
+// Highscore
+function readHighscore(){
+  const hs = localStorage.getItem('highscore');
+  highscoreDisplay.textContent = hs ? `Bestzeit: ${hs}s` : 'Bestzeit: --';
+}
+function saveHighscore(time){
+  const prev = parseFloat(localStorage.getItem('highscore')||'0');
+  if(time>prev){
+    localStorage.setItem('highscore', time.toFixed(2));
+    return true;
+  }
+  return false;
+}
+
+// Obstacles
+function spawnObstacle(){
+  const r=Math.random();
+  let type=null;
+  if(r<0.025) type='construction';
+  else if(r<0.085) type='accident';
+  else if(r<0.105) type='block';
+  else if(r<0.355) type='hole';
+  if(!type) return;
+  const lane=Math.floor(Math.random()*laneCount);
+  if(type==='hole'){
+    const size=carSize*0.4;
+    obstacles.push({type,lane,x:W,w:size,h:size,speed:speeds.hole});
+  } else if(type==='construction'){
+    const width=carSize*(2+Math.random()*2); // länger
+    const height=carSize*(0.8+Math.random()*0.8);
+    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.construction});
+  } else if(type==='accident'){
+    const width=carSize*(1+Math.random()*0.5);
+    const height=carSize*(0.8+Math.random()*0.4);
+    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.accident});
+  } else if(type==='block'){
+    const width=carSize*(40+Math.random()*50);
+    const height=laneHeight;
+    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.block});
+  }
+}
+function updateObstacles(){ obstacles.forEach(o=>o.x-=o.speed); obstacles=obstacles.filter(o=>o.x+o.w>0); }
+
+// Players
+function updatePlayers(){
+  if(!running) return;
+  if(player1.lives>0){
+    if(keys['q'] && player1.step>0){ player1.step--; keys['q']=false; }
+    if(keys['e'] && player1.step<laneCount*4){ player1.step++; keys['e']=false; }
+  }
+  if(player2.lives>0){
+    if(keys['u'] && player2.step>0){ player2.step--; keys['u']=false; }
+    if(keys['o'] && player2.step<laneCount*4){ player2.step++; keys['o']=false; }
+  }
+}
+
+// Collisions
+function checkCollisions(){ obstacles.forEach((o,i)=>{
+    [player1,player2].forEach((p,idx)=>{
+      if(p.lives>0 && Math.floor(p.step/4)===o.lane){
+        const carX=W*(idx===0?0.3:0.35)-carSize/2;
+        const carY=roadY+(p.step*stepSize)-carSize/2;
+        const obsY=roadY+o.lane*laneHeight+(laneHeight-o.h)/2;
+        if(o.x<carX+carSize&&o.x+o.w>carX&&obsY<carY+carSize&&obsY+o.h>carY){
+          p.lives-=(o.type==='hole'?1:10);
+          if(p.lives<0) p.lives=0;
+          if(p.lives===0) p.stopTime=(Date.now()-p.start)/1000;
+          obstacles.splice(i,1);
+        }
+      }
+    });
+  });
+}
+
+// Draw
+function draw(){
+  ctx.fillStyle='#070'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#333'; ctx.fillRect(0,roadY,W,roadHeight);
+  ctx.strokeStyle='#666'; ctx.lineWidth=2; ctx.setLineDash([10,10]);
+  for(let i=1;i<laneCount;i++){ const y=roadY+i*laneHeight; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.setLineDash([]);
+  obstacles.forEach(o=>{
+    const y=roadY+o.lane*laneHeight+(laneHeight-o.h)/2;
+    if(o.type==='hole'){
+      ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(o.x+o.w/2,y+o.h/2,o.w/2,0,2*Math.PI); ctx.fill();
+    } else if(o.type==='construction'){
+      // alte Grafik und längere Bauhindernisse
+      ctx.fillStyle='#fa0'; ctx.fillRect(o.x,y,o.w,o.h);
+      ctx.strokeStyle='#fff'; ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(o.x,y);
+      ctx.lineTo(o.x+o.w,y+o.h);
+      ctx.moveTo(o.x,y+o.h);
+      ctx.lineTo(o.x+o.w,y);
+      ctx.stroke();
+    } else if(o.type==='accident'){
+      ctx.fillStyle='#800'; ctx.fillRect(o.x,y,o.w,o.h);
+      ctx.strokeStyle='#000'; ctx.lineWidth=2; ctx.strokeRect(o.x,y,o.w,o.h);
+    } else if(o.type==='block'){
+      ctx.fillStyle='#700'; ctx.fillRect(o.x,y,o.w,o.h);
+      ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.strokeRect(o.x,y,o.w,o.h);
+    }
+  });
+  [player1,player2].forEach((p,idx)=>{
+    if(p.lives>0){ const x=W*(idx===0?0.3:0.35)-carSize/2; const y=roadY+(p.step*stepSize)-carSize/2;
+      ctx.fillStyle=p.color; ctx.fillRect(x,y,carSize,carSize);
+    }
+  });
+}
+
+// Game loop
+function loop(){
+  frame++;
+  if(frame%spawnInterval===0) spawnObstacle();
+  updatePlayers(); updateObstacles(); checkCollisions(); draw();
+  [player1,player2].forEach((p,i)=>{
+    const time = p.lives>0 ? (Date.now()-p.start)/1000 : p.stopTime;
+    if(p.lives===0 && p.stopTime===null) p.stopTime=time;
+    const timeEl = i===0 ? score1El : score2El;
+    const livesEl = i===0 ? lives1El : lives2El;
+    timeEl.textContent = `S${i+1} Zeit: ${time.toFixed(2)}s`;
+    livesEl.textContent = `S${i+1} Leben: ${p.lives}`;
+  });
+  if(player1.lives>0||player2.lives>0) requestAnimationFrame(loop);
+  else endGame();
+}
+
+// Endgame
+function endGame(){
+  running = false;
+  const t1 = player1.stopTime, t2 = player2.stopTime;
+  let result;
+  if(t1>t2) result='Spieler 1 gewinnt!';
+  else if(t2>t1) result='Spieler 2 gewinnt!';
+  else result='Unentschieden!';
+  resultText.textContent = result;
+  const best = Math.max(t1,t2);
+  if(saveHighscore(best)) newHighscore.textContent = 'Neuer Highscore!';
+  endScreen.style.display='flex';
+}
+</script>
+</body>
+</html>
