@@ -1,1 +1,146 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Schach für Zwei</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-top: 1rem;
+    }
+    #board {
+      display: grid;
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      border: 3px solid #333;
+      margin-top: 1rem;
+    }
+    .square {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+    }
+    .light {
+      background-color: #f0d9b5;
+    }
+    .dark {
+      background-color: #b58863;
+    }
+    .square.selected {
+      outline: 3px solid red;
+    }
+    .piece {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+    }
+    #status {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Schach für Zwei</h1>
+  <div id="board"></div>
+  <div id="status">Weiß am Zug</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script>
+    const game = new Chess();
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+
+    const files = ['a','b','c','d','e','f','g','h'];
+    let selectedSquare = null;
+
+    function createBoard() {
+      boardEl.innerHTML = '';
+      for (let r = 7; r >= 0; r--) {
+        for (let f = 0; f < 8; f++) {
+          const square = document.createElement('div');
+          square.classList.add('square');
+          square.classList.add((r + f) % 2 === 0 ? 'light' : 'dark');
+          const sqName = files[f] + (r + 1);
+          square.dataset.square = sqName;
+          square.addEventListener('click', () => onSquareClick(sqName));
+          boardEl.appendChild(square);
+        }
+      }
+      updateBoard();
+    }
+
+    function onSquareClick(sq) {
+      const piece = game.get(sq);
+      if (selectedSquare) {
+        const move = game.move({
+          from: selectedSquare,
+          to: sq,
+          promotion: 'q' // Standard: immer Dame
+        });
+        selectedSquare = null;
+        clearHighlights();
+        if (move) {
+          updateBoard();
+          updateStatus();
+        }
+      } else {
+        if (piece && piece.color === game.turn()) {
+          selectedSquare = sq;
+          highlightSquare(sq);
+        }
+      }
+    }
+
+    function updateBoard() {
+      const squares = document.querySelectorAll('.square');
+      squares.forEach(sq => {
+        sq.innerHTML = '';
+        const square = sq.dataset.square;
+        const piece = game.get(square);
+        if (piece) {
+          const img = document.createElement('img');
+          img.classList.add('piece');
+          img.src = `img/${piece.color}${piece.type}.png`; // z. B. 'wp.png'
+          sq.appendChild(img);
+        }
+      });
+    }
+
+    function highlightSquare(sq) {
+      clearHighlights();
+      const el = document.querySelector(`[data-square="${sq}"]`);
+      if (el) el.classList.add('selected');
+    }
+
+    function clearHighlights() {
+      document.querySelectorAll('.square').forEach(el => el.classList.remove('selected'));
+    }
+
+    function updateStatus() {
+      if (game.in_checkmate()) {
+        statusEl.textContent = `Schachmatt! ${game.turn() === 'w' ? 'Schwarz' : 'Weiß'} gewinnt`;
+      } else if (game.in_draw()) {
+        statusEl.textContent = "Unentschieden!";
+      } else {
+        statusEl.textContent = `${game.turn() === 'w' ? 'Weiß' : 'Schwarz'} am Zug${game.in_check() ? ' (Schach!)' : ''}`;
+      }
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
 
