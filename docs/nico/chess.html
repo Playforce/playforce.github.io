@@ -88,7 +88,7 @@
         const move = game.move({
           from: selectedSquare,
           to: sq,
-          promotion: 'q' // Standard: immer Dame
+          promotion: 'q'
         });
         selectedSquare = null;
         clearHighlights();
@@ -113,7 +113,7 @@
         if (piece) {
           const img = document.createElement('img');
           img.classList.add('piece');
-          img.src = `img/${piece.color}${piece.type}.png`; // z. B. 'wp.png'
+          img.src = `img/${piece.color}${piece.type}.png`; // Beispiel: 'wp.png'
           sq.appendChild(img);
         }
       });
