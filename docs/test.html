@@ -58,6 +58,7 @@
   <div class="buttons">
     <button class="knopf" onclick="playerHardDrop()">⭳</button>
     <button class="knopf" onclick="playerRotate(1)">⟳</button>
+    <button class="knopf" onclick="isPaused = !isPaused">P</button>
   </div>
   <div class="buttons">
     <button class="knopf" onclick="playerMove(-1)">←</button>
@@ -73,9 +74,29 @@
     let score = 0;
     let isPaused = false;
 
-    function pauseGame() {
-      isPaused = !isPaused;
+    function saveGame() {
+      localStorage.setItem('tetrisArena', JSON.stringify(arena));
+      localStorage.setItem('tetrisPlayer', JSON.stringify(player));
+      localStorage.setItem('tetrisScore', score);
     }
+    
+    function loadGame() {
+      const savedArena = JSON.parse(localStorage.getItem('tetrisArena'));
+      const savedPlayer = JSON.parse(localStorage.getItem('tetrisPlayer'));
+      const savedScore = parseInt(localStorage.getItem('tetrisScore'));
+    
+      if (savedArena && savedPlayer) {
+        for (let y = 0; y < arena.length; y++) {
+          for (let x = 0; x < arena[y].length; x++) {
+            arena[y][x] = savedArena[y][x];
+          }
+        }
+        player.matrix = savedPlayer.matrix;
+        player.pos = savedPlayer.pos;
+        score = savedScore;
+      }
+    }
+    
 
     function highScoreTetris(score) {
       var saved = 0;
@@ -186,6 +207,7 @@
         highScoreTetris(score);
         playerReset();
         arenaSweep();
+        saveGame();
       }
       dropCounter = 0;
     }
@@ -314,6 +336,7 @@
     
 
     playerReset();
+    loadGame();
     update();
   </script>
 </body>
