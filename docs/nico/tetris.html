@@ -57,14 +57,14 @@
   <div id="highscore">Highscore: 0</div>
   <canvas width="240" height="400" id="tetris"></canvas>
   <div class="buttons">
-    <button class="knopf" onclick="playerHardDrop()">⭳</button>
-    <button class="knopf" onclick="playerRotate(1)">⟳</button>
-    <button class="knopf" onclick="playerHardDrop()">⭳</button>
+    <button class="knopf" onclick="playerHardDrop()">D</button>
+    <button class="knopf" onclick="playerRotate(1)">w</button>
+    <button class="knopf" onclick="playerHardDrop()">D</button>
   </div>
   <div class="buttons">
-    <button class="knopf" onclick="playerMove(-1)">←</button>
-    <button class="knopf" onclick="playerDrop()">↓</button>
-    <button class="knopf" onclick="playerMove(1)">→</button>
+    <button class="knopf" onclick="playerMove(-1)">a</button>
+    <button class="knopf" onclick="playerDrop()">s</button>
+    <button class="knopf" onclick="playerMove(1)">d</button>
   </div>
 
   <script>
@@ -89,19 +89,6 @@
       }
       return saved;
     }
-
-    function getGhostPosition() {
-      const ghost = {
-        pos: { ...player.pos },
-        matrix: player.matrix
-      };
-      while (!collide(arena, ghost)) {
-        ghost.pos.y++;
-      }
-      ghost.pos.y--; // zurück zur letzten gültigen Position
-      return ghost;
-    }
-
     const matrix = {
       T: [[0,5,0],[5,5,5],[0,0,0]],
       O: [[1,1],[1,1]],
@@ -124,7 +111,7 @@
         row.forEach((value, x) => {
           context.fillStyle = colors[value]; // value z.B. 4 -> colors[4]
           if (value) {
-            context.fillStyle = isGhost ? 'rgba(255, 255, 255, 0.3)' : colors[value];
+            context.fillStyle = colors[value];
             context.fillRect(x + offset.x, y + offset.y, 1, 1);
           }
         });
@@ -136,10 +123,6 @@
       context.fillRect(0, 0, canvas.width, canvas.height);
 
       drawMatrix(arena, {x:0,y:0});
-      
-      const ghost = getGhostPosition();
-      drawMatrix(player.matrix, ghost.pos, true);
-      
       drawMatrix(player.matrix, player.pos);
     }
 
@@ -244,7 +227,6 @@
       player.pos.y = 0;
       player.pos.x = Math.floor((arena[0].length / 2) - (player.matrix[0].length / 2));
       if (collide(arena, player)) {
-        highScoreTetris(score);
         arena.forEach(row => row.fill(0));
         score = 0;
       }
