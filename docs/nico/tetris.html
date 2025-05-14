@@ -89,6 +89,19 @@
       }
       return saved;
     }
+
+    function getGhostPosition() {
+      const ghost = {
+        pos: { ...player.pos },
+        matrix: player.matrix
+      };
+      while (!collide(arena, ghost)) {
+        ghost.pos.y++;
+      }
+      ghost.pos.y--; // zurück zur letzten gültigen Position
+      return ghost;
+    }
+
     const matrix = {
       T: [[0,5,0],[5,5,5],[0,0,0]],
       O: [[1,1],[1,1]],
@@ -111,7 +124,7 @@
         row.forEach((value, x) => {
           context.fillStyle = colors[value]; // value z.B. 4 -> colors[4]
           if (value) {
-            context.fillStyle = colors[value];
+            context.fillStyle = isGhost ? 'rgba(255, 255, 255, 0.3)' : colors[value];
             context.fillRect(x + offset.x, y + offset.y, 1, 1);
           }
         });
@@ -123,6 +136,10 @@
       context.fillRect(0, 0, canvas.width, canvas.height);
 
       drawMatrix(arena, {x:0,y:0});
+      
+      const ghost = getGhostPosition();
+      drawMatrix(player.matrix, ghost.pos, true);
+      
       drawMatrix(player.matrix, player.pos);
     }
 
