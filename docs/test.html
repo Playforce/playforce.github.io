@@ -99,6 +99,7 @@
     
 
     function highScoreTetris(score) {
+      saveGame();
       var saved = 0;
       try { saved = parseFloat(localStorage.highScoreTetris); } catch (e) { saved = 0; }
       if (!(typeof score === 'undefined')) {
