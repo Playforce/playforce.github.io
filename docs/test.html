@@ -71,6 +71,11 @@
     context.scale(20, 20);
 
     let score = 0;
+    let isPaused = false;
+
+    function pauseGame() {
+      isPaused = !isPaused;
+    }
 
     function highScoreTetris(score) {
       var saved = 0;
@@ -279,6 +284,8 @@
         playerRotate(1);
       } else if (event.key === ' ') {
         playerHardDrop();
+      } else if (event.key === 'p') {
+        isPaused = !isPaused;
       }
     });
 
@@ -287,6 +294,10 @@
 
     let lastTime = 0;
     function update(time = 0) {
+      if (isPaused) {
+        requestAnimationFrame(update);
+        return;
+      }
       const deltaTime = time - lastTime;
       lastTime = time;
 
@@ -300,6 +311,7 @@
       document.getElementById('highscore').innerText = 'Highscore: ' + highScoreTetris();
       requestAnimationFrame(update);
     }
+    
 
     playerReset();
     update();
