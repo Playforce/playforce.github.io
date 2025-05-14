@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake-Spiel</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #282c34, #3b3f47);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #fff;
+    }
+    #game {
+      background: #111;
+      border: 4px solid #555;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      margin-top: 20px;
+    }
+    #scoreboard {
+      margin-top: 20px;
+      display: flex;
+      gap: 20px;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+    #controls {
+      margin-top: 20px;
+      background: rgba(0,0,0,0.5);
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      max-width: 1000px;
+    }
+    #controls label {
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+      align-items: center;
+    }
+    #controls input[type='range'] {
+      width: 120px;
+    }
+    #controls select, #controls input[type='color'] {
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="scoreboard">
+    <div id="score">Score: 0</div>
+    <div id="highscore">Highscore: 0</div>
+    <div id="wins">Wins: 0</div>
+  </div>
+
+  <canvas id="game" width="720" height="720"></canvas>
+
+  <div id="controls">
+    <label>
+      Geschwindigkeit (ms):
+      <input type="range" id="speedControl" min="20" max="1000" value="100" step="20">
+      <span id="speedValue">100</span>
+    </label>
+    <label>
+      Schlange Farbe:
+      <input type="color" id="snakeColorControl" value="#00ff99">
+    </label>
+    <label>
+      Wandkollision:
+      <input type="checkbox" id="wallControl" checked>
+    </label>
+    <label>
+      Apfel Farbe:
+      <input type="color" id="appleColorControl" value="#ff3366">
+    </label>
+    <label>
+      Apfel Form:
+      <select id="appleShapeControl">
+        <option value="heart">Herz</option>
+        <option value="circle">Kreis</option>
+        <option value="square">Viereck</option>
+      </select>
+    </label>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 20;
+    const tileCount = canvas.width / gridSize;
+    const maxScore = 30;
+
+    let snake = [{ x: Math.floor(tileCount/2), y: Math.floor(tileCount/2) }];
+    let velocity = { x: 0, y: 0 };
+    let apple = getRandomPosition();
+    let score = 0;
+    let wallCollision = true;
+    let snakeColor = '#00ff99';
+    let speed = 100;
+    let appleColor = '#ff3366';
+    let appleShape = 'heart';
+
+    let highscore = parseInt(localStorage.getItem('snakeHighscore')) || 0;
+    let wins = parseInt(localStorage.getItem('snakeWins')) || 0;
+    document.getElementById('highscore').textContent = 'Highscore: ' + highscore;
+    document.getElementById('wins').textContent = 'Wins: ' + wins;
+
+    const scoreEl = document.getElementById('score');
+    const speedControl = document.getElementById('speedControl');
+    const speedValue = document.getElementById('speedValue');
+    const snakeColorControl = document.getElementById('snakeColorControl');
+    const wallControl = document.getElementById('wallControl');
+    const appleColorControl = document.getElementById('appleColorControl');
+    const appleShapeControl = document.getElementById('appleShapeControl');
+
+    // Event Listeners
+    speedControl.addEventListener('input', () => {
+      speed = parseInt(speedControl.value);
+      speedValue.textContent = speed;
+    });
+    snakeColorControl.addEventListener('input', () => {
+      snakeColor = snakeColorControl.value;
+    });
+    wallControl.addEventListener('change', () => {
+      wallCollision = wallControl.checked;
+    });
+    appleColorControl.addEventListener('input', () => {
+      appleColor = appleColorControl.value;
+    });
+    appleShapeControl.addEventListener('change', () => {
+      appleShape = appleShapeControl.value;
+    });
+
+    document.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      switch (key) {
+        case 'arrowup': case 'w': if (velocity.y === 0) velocity = { x: 0, y: -1 }; break;
+        case 'arrowdown': case 's': if (velocity.y === 0) velocity = { x: 0, y: 1 }; break;
+        case 'arrowleft': case 'a': if (velocity.x === 0) velocity = { x: -1, y: 0 }; break;
+        case 'arrowright': case 'd': if (velocity.x === 0) velocity = { x: 1, y: 0 }; break;
+      }
+    });
+
+    function gameLoop() {
+      update();
+      draw();
+      setTimeout(gameLoop, speed);
+    }
+
+    function update() {
+      if (velocity.x === 0 && velocity.y === 0) return;
+      const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+      if (wallCollision) {
+        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) return gameOver();
+      } else {
+        head.x = (head.x + tileCount) % tileCount;
+        head.y = (head.y + tileCount) % tileCount;
+      }
+      if (snake.some(seg => seg.x === head.x && seg.y === head.y)) return gameOver();
+      snake.unshift(head);
+      if (head.x === apple.x && head.y === apple.y) {
+        score++;
+        scoreEl.textContent = 'Score: ' + score;
+        if (score > highscore) {
+          highscore = score; localStorage.setItem('snakeHighscore', highscore);
+          document.getElementById('highscore').textContent = 'Highscore: ' + highscore;
+        }
+        if (score >= maxScore) return winGame();
+        apple = getRandomPosition();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Gitter
+      ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+      for (let i = 0; i <= tileCount; i++) {
+        ctx.beginPath(); ctx.moveTo(i*gridSize,0); ctx.lineTo(i*gridSize,canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,i*gridSize); ctx.lineTo(canvas.width,i*gridSize); ctx.stroke();
+      }
+      // Schlange
+      snake.forEach(seg => {
+        ctx.beginPath();
+        const x = seg.x*gridSize+gridSize/2;
+        const y = seg.y*gridSize+gridSize/2;
+        const r = gridSize/2-2;
+        ctx.arc(x,y,r,0,2*Math.PI);
+        ctx.fillStyle = snakeColor;
+        ctx.fill();
+      });
+      // Apfel
+      ctx.fillStyle = appleColor;
+      const ax = apple.x*gridSize, ay = apple.y*gridSize;
+      switch(appleShape) {
+        case 'circle':
+          ctx.beginPath();
+          ctx.arc(ax+gridSize/2, ay+gridSize/2, gridSize/2-4, 0, 2*Math.PI);
+          ctx.fill(); break;
+        case 'square':
+          ctx.fillRect(ax+4, ay+4, gridSize-8, gridSize-8); break;
+        default: // heart
+          const cx = ax+gridSize/2, cy = ay+gridSize/2, r2 = gridSize/2-4;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy + r2/4);
+          ctx.bezierCurveTo(cx + r2, cy - r2/2, cx + 2*r2, cy + r2/2, cx, cy + 2*r2);
+          ctx.bezierCurveTo(cx - 2*r2, cy + r2/2, cx - r2, cy - r2/2, cx, cy + r2/4);
+          ctx.fill();
+      }
+    }
+
+    function getRandomPosition() {
+      let pos;
+      do { pos = { x: Math.floor(Math.random()*tileCount), y: Math.floor(Math.random()*tileCount) }; }
+      while (snake.some(s=>s.x===pos.x&&s.y===pos.y));
+      return pos;
+    }
+
+    function gameOver() { alert('Game Over! Dein Score: '+score); resetGame(); }
+    function winGame() { wins++; localStorage.setItem('snakeWins',wins); document.getElementById('wins').textContent='Wins: '+wins; alert('Du hast gewonnen!'); resetGame(); }
+    function resetGame() { snake=[{x:Math.floor(tileCount/2),y:Math.floor(tileCount/2)}]; velocity={x:0,y:0}; apple=getRandomPosition(); score=0; scoreEl.textContent='Score: 0'; }
+
+    // Start
+    gameLoop();
+  </script>
+</body>
+</html>
