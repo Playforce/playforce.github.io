@@ -375,6 +375,9 @@
         playerHardDrop();
       } else if (event.key === 'p') {
         isPaused = !isPaused;
+      } else if (event.key === '<') {
+        saveGame();
+        window.close();
       }
     });
 
