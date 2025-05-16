@@ -114,6 +114,7 @@
     <button class="knopf" onclick="playerHardDrop()">⭳</button>
     <button class="knopf" onclick="playerRotate(1)">⟳</button>
     <button class="knopf" onclick="isPaused = !isPaused">P</button>
+    <button class="knopf" href="https://www.google.com/">T</button>
   </div>
   <div class="buttons">
     <button class="knopf" onclick="playerMove(-1)">←</button>
@@ -376,7 +377,7 @@
       } else if (event.key === 'p') {
         isPaused = !isPaused;
       } else if (event.key === 't') {
-        history.go(-(window.history.length - 2));
+        document.getElementById("terminate").click();
       }
     });
 
