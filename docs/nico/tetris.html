@@ -86,6 +86,10 @@
       align-items: center;
       flex-direction: column;
     }
+    #next-container canvas {
+      margin-bottom: 10px;
+    }
+
     
     @media (min-width: 768px) {
       #next-container {
@@ -107,6 +111,9 @@
   <div id="next-container">
     <h2>Nächstes Teil</h2>
     <canvas id="next" width="100" height="100"></canvas>
+  
+    <h2>Gehaltenes Teil</h2>
+    <canvas id="hold" width="100" height="100"></canvas>
   </div>
 </div>
 
@@ -127,9 +134,40 @@
     const context = canvas.getContext('2d');
     context.scale(20, 20);
 
+    const holdCanvas = document.getElementById('hold');
+    const holdCtx = holdCanvas.getContext('2d');
+    holdCtx.scale(20, 20);
+
+
     let score = 0;
     let isPaused = false;
     let nextPiece = null;
+
+    let heldPiece = null;
+    let holdUsed = false; // Damit man pro Drop nur einmal tauschen kann
+
+    function holdPiece() {
+      if (holdUsed) return;
+    
+      if (!heldPiece) {
+        heldPiece = player.matrix;
+        playerReset();
+      } else {
+        const temp = heldPiece;
+        heldPiece = player.matrix;
+        player.matrix = temp;
+        player.pos.y = 0;
+        player.pos.x = Math.floor((arena[0].length / 2) - (player.matrix[0].length / 2));
+        if (collide(arena, player)) {
+          arena.forEach(row => row.fill(0));
+          score = 0;
+          nextPiece = null;
+        }
+      }
+    
+      holdUsed = true;
+    }
+
 
 
     function saveGame() {
@@ -338,6 +376,8 @@
         score = 0;
         nextPiece = null;
       }
+
+      holdUsed = false;
     }
 
 
@@ -378,6 +418,8 @@
         isPaused = !isPaused;
       } else if (event.key === 't') {
         document.getElementById("terminate").click();
+      } else if (event.key === 'h') {
+        holdPiece();
       }
     });
 
@@ -385,6 +427,7 @@
     let dropInterval = 1000;
 
     let lastTime = 0;
+    
     function update(time = 0) {
       if (isPaused) {
         requestAnimationFrame(update);
@@ -400,6 +443,7 @@
 
       draw();
       drawNext(); // neben draw() aufrufen
+      drawHold();
       document.getElementById('score').innerText = 'Score: ' + score;
       document.getElementById('highscore').innerText = 'Highscore: ' + highScoreTetris();
       requestAnimationFrame(update);
@@ -412,18 +456,33 @@
     function drawNext() {
       nextCtx.fillStyle = '#000';
       nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
       if (!nextPiece) return;
+        nextPiece.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value) {
+              nextCtx.fillStyle = colors[value];
+              nextCtx.fillRect(x + 1, y + 1, 1, 1); // etwas zentriert
+            }
+          });
+        });
+      }
+
+    function drawHold() {
+      holdCtx.fillStyle = '#000';
+      holdCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
     
-      nextPiece.forEach((row, y) => {
+      if (!heldPiece) return;
+    
+      heldPiece.forEach((row, y) => {
         row.forEach((value, x) => {
           if (value) {
-            nextCtx.fillStyle = colors[value];
-            nextCtx.fillRect(x + 1, y + 1, 1, 1); // etwas zentriert
+            holdCtx.fillStyle = colors[value];
+            holdCtx.fillRect(x + 1, y + 1, 1, 1); // leicht zentriert
           }
         });
       });
     }
+
 
     
 
