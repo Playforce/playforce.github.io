@@ -69,7 +69,7 @@
 <body>
     <p id="name"></p>
     <nav class="navbar">
-        <ul class="nav-links" id="nav">
+        <ul class="nav-links">
             <li><a class="knopf" href="Lukas/karte.html">Karte</a></li>
             <li><a class="knopf" href="Lukas/gta.html">Gta</a></li>
             <li><a class="knopf" href="silvan/flappyBird.html">Fahd Bird</a></li>
@@ -95,7 +95,7 @@
         }
         let name = localStorage.getItem("indexName");
         document.getElementById("name").innerHTML = name;
-        if (name == "Nico") {
+        if (name == 'Nico') {
             document.getElementById("Nav").style.display = "none";
             document.getElementById("name").innerHTML = name + " det";
         }
