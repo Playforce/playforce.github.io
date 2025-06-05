@@ -60,6 +60,9 @@
         .andere:hover {
             background-color: #0b7dda;
         }
+        #name {
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -90,7 +93,7 @@
             localStorage.setItem("indexName", person);
         }
         let name = localStorage.getItem("indexName");
-        document.getElementById("name").innerHTML = "Hallo " + name;
+        document.getElementById("name").innerHTML = "   - Hallo " + name;
     </script>
 
 </body>
