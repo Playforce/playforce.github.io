@@ -84,6 +84,14 @@
             <li><a class="andere" href="test.html">Test</a></li>
         </ul>
     </nav>
+    <script>
+        if (localStorage.getItem("indexName") === null) {
+            let person = prompt("Namen eingeben");
+            localStorage.setItem("indexName", person);
+        }
+        let name = localStorage.getItem("indexName");
+        document.getElementById("name").innerHTML = "Hallo " + name;
+    </script>
 
 </body>
 </html>
