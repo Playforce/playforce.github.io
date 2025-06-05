@@ -1,429 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Tetris</title>
-  <style>
-    body {
-      background: #111;
-      color: #fff;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayForce</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #333;
+        }
 
-.game-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+        * {
+          touch-action: manipulation;
+        }
 
-@media (min-width: 768px) {
-  .game-wrapper {
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-  }
-}
+        .navbar {
+            background-color: #333;
+            padding: 10px;
+        }
 
-#next-container {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-}
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap; /* WICHTIG: damit die Knöpfe umbrechen */
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            justify-content: center; /* zentriert die Knöpfe */
+            gap: 10px; /* Abstand zwischen Knöpfen */
+        }
 
-@media (min-width: 768px) {
-  #next-container {
-    display: flex;
-  }
-}
+        .nav-links li {
+            flex: 1 1 150px; /* Minimum-Breite pro Knopf */
+            max-width: 200px; /* Maximalbreite pro Knopf */
+        }
 
-#next-container h2 {
-  font-size: 1.2rem;
-  margin: 0 0 10px 0;
-}
-    * {
-      touch-action: manipulation;
-    }
+        .knopf, .andere {
+            display: block;
+            text-align: center;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
 
-    canvas {
-      border: 2px solid #fff;
-      margin-top: 20px;
-    }
-    h1 {
-      margin-top: 20px;
-    }
-    #score {
-      font-size: 1.5rem;
-      margin-top: 10px;
-    }
-    .buttons {
-      display: flex;
-      flex-direction: row;
-    }
+        .knopf:hover, .andere:hover {
+            background-color: #45a049;
+        }
 
-    .knopf {
-      display: block;
-      text-align: center;
-      background-color: #4CAF50;
-      color: white;
-      padding: 10px;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 1rem;
-      transition: background-color 0.3s;
-      width: 4rem;
-      margin: 2px 2px 2px 2px;
-    }
+        /* Andere Klasse leicht anders färben */
+        .andere {
+            background-color: #2196F3;
+        }
 
-    #next-container {
-      margin-top: 20px;
-      display: none;
-      align-items: center;
-      flex-direction: column;
-    }
-    
-    @media (min-width: 768px) {
-      #next-container {
-        display: flex;
-      }
-    }
-
-  </style>
+        .andere:hover {
+            background-color: #0b7dda;
+        }
+    </style>
 </head>
 <body>
-  <h1>Tetris</h1>
-  <div id="score">Score: 0</div>
-  <div id="highscore">Highscore: 0</div>
-  <div class="game-wrapper">
-  <canvas width="240" height="400" id="tetris"></canvas>
-  <div id="next-container">
-    <h2>Nächstes Teil</h2>
-    <canvas id="next" width="100" height="100"></canvas>
-  </div>
-</div>
+    <p></p>
+    <nav class="navbar">
+        <ul class="nav-links">
+            <li><a class="knopf" href="Lukas/karte.html">Karte</a></li>
+            <li><a class="knopf" href="Lukas/gta.html">Gta</a></li>
+            <li><a class="knopf" href="silvan/flappyBird.html">Fahd Bird</a></li>
+            <li><a class="knopf" href="silvan/handy.html">Handy Baukasten</a></li>
+            <li><a class="knopf" href="nico/casino.html">Casino</a></li>
+            <li><a class="knopf" href="silvan/passwort.html">Hacker</a></li>
+            <li><a class="knopf" href="nico/tetris.html">Tetris</a></li>
+            <li><a class="knopf" href="nico/pong.html">Pong</a></li>
+            <li><a class="knopf" href="https://trade-vision-analysis-bot.lovable.app/">Trading</a></li>
+            <li><a class="knopf" href="https://blocky-craft-world-2d.lovable.app/">blocky-craft</a></li>
+            <li><a class="knopf" href="https://chart-whisperer-guidebook.lovable.app">Chart analyse</a></li>
+            <li><a class="knopf" href="silvan/highwayRun.html">Highway Run</a></li>
+            <li><a class="knopf" href="https://quickdraw.withgoogle.com/#details">Quickdraw</a></li>
+            <li><a class="knopf" href="https://poki.com/de">Poki</a></li>
+            <li><a class="knopf" href="silvan/snake.html">Snake</a></li
+            <li><a class="andere" href="test.html">Test</a></li>
+        </ul>
+    </nav>
 
-  <div class="buttons">
-    <button class="knopf" onclick="playerHardDrop()">⭳</button>
-    <button class="knopf" onclick="playerRotate(1)">⟳</button>
-    <button class="knopf" onclick="isPaused = !isPaused">P</button>
-  </div>
-  <div class="buttons">
-    <button class="knopf" onclick="playerMove(-1)">←</button>
-    <button class="knopf" onclick="playerDrop()">↓</button>
-    <button class="knopf" onclick="playerMove(1)">→</button>
-  </div>
-
-  <script>
-    const canvas = document.getElementById('tetris');
-    const context = canvas.getContext('2d');
-    context.scale(20, 20);
-
-    let score = 0;
-    let isPaused = false;
-    let nextPiece = null;
-
-
-    function saveGame() {
-      localStorage.setItem('tetrisArena', JSON.stringify(arena));
-      localStorage.setItem('tetrisPlayer', JSON.stringify(player));
-      localStorage.setItem('tetrisScore', score);
-    }
-    
-    function loadGame() {
-      const savedArena = JSON.parse(localStorage.getItem('tetrisArena'));
-      const savedPlayer = JSON.parse(localStorage.getItem('tetrisPlayer'));
-      const savedScore = parseInt(localStorage.getItem('tetrisScore'));
-    
-      if (savedArena && savedPlayer) {
-        for (let y = 0; y < arena.length; y++) {
-          for (let x = 0; x < arena[y].length; x++) {
-            arena[y][x] = savedArena[y][x];
-          }
-        }
-        player.matrix = savedPlayer.matrix;
-        player.pos = savedPlayer.pos;
-        score = savedScore;
-      }
-    }
-    
-
-    function highScoreTetris(score) {
-      saveGame();
-      var saved = 0;
-      try { saved = parseFloat(localStorage.highScoreTetris); } catch (e) { saved = 0; }
-      if (!(typeof score === 'undefined')) {
-        try { score = parseFloat(score); } catch (e) { score = 0; }
-        if (score > saved) {
-          saved = score;
-          localStorage.highScoreTetris = '' + score;
-        }
-      }
-      if (isNaN(saved)) {
-        saved = 0;
-        localStorage.highScoreTetris = '0';
-      }
-      return saved;
-    }
-
-    const matrix = {
-      T: [[0,5,0],[5,5,5],[0,0,0]],
-      O: [[1,1],[1,1]],
-      L: [[0,0,2],[2,2,2],[0,0,0]],
-      J: [[3,0,0],[3,3,3],[0,0,0]],
-      I: [[0,0,0,0],[4,4,4,4],[0,0,0,0],[0,0,0,0]],
-      S: [[0,6,6],[6,6,0],[0,0,0]],
-      Z: [[7,7,0],[0,7,7],[0,0,0]],
-    };
-
-    function createMatrix(w, h) {
-      const matrix = [];
-      while (h--) matrix.push(new Array(w).fill(0));
-      return matrix;
-    }
-
-    function drawMatrix(matrix, offset, isGhost = false) {
-      matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) {
-            context.fillStyle = isGhost ? 'rgba(255, 255, 255, 0.3)' : colors[value];
-            context.fillRect(x + offset.x, y + offset.y, 1, 1);
-          }
-        });
-      });
-    }
-
-    function getGhostPosition() {
-      const ghost = {
-        pos: { x: player.pos.x, y: player.pos.y },
-        matrix: player.matrix
-      };
-      while (!collide(arena, ghost)) {
-        ghost.pos.y++;
-      }
-      ghost.pos.y--;
-      return ghost;
-    }
-
-    function draw() {
-      context.fillStyle = '#000';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      drawMatrix(arena, {x:0,y:0});
-
-      const ghost = getGhostPosition();
-      drawMatrix(player.matrix, ghost.pos, true);  // Ghost anzeigen
-
-      drawMatrix(player.matrix, player.pos);       // Aktuellen Stein anzeigen
-    }
-
-    function merge(arena, player) {
-      player.matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) {
-            arena[y + player.pos.y][x + player.pos.x] = value;
-          }
-        });
-      });
-    }
-
-    function collide(arena, player) {
-      const m = player.matrix;
-      const o = player.pos;
-      for (let y = 0; y < m.length; ++y) {
-        for (let x = 0; x < m[y].length; ++x) {
-          if (m[y][x] && (arena[y + o.y] && arena[y + o.y][x + o.x]) !== 0) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-
-    function rotate(matrix, dir) {
-      for (let y = 0; y < matrix.length; ++y) {
-        for (let x = 0; x < y; ++x) {
-          [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-        }
-      }
-      if (dir > 0) matrix.forEach(row => row.reverse());
-      else matrix.reverse();
-    }
-
-    function playerDrop() {
-      player.pos.y++;
-      if (collide(arena, player)) {
-        player.pos.y--;
-        merge(arena, player);
-        highScoreTetris(score);
-        playerReset();
-        arenaSweep();
-        saveGame();
-      }
-      dropCounter = 0;
-    }
-
-    function playerHardDrop() {
-      while (!collide(arena, player)) {
-        player.pos.y++;
-      }
-      player.pos.y--;
-      merge(arena, player);
-      highScoreTetris(score);
-      playerReset();
-      arenaSweep();
-      dropCounter = 0;
-    }
-
-    function playerMove(dir) {
-      player.pos.x += dir;
-      if (collide(arena, player)) player.pos.x -= dir;
-    }
-
-    function playerRotate(dir) {
-      const pos = player.pos.x;
-      let offset = 1;
-      rotate(player.matrix, dir);
-      while (collide(arena, player)) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > player.matrix[0].length) {
-          rotate(player.matrix, -dir);
-          player.pos.x = pos;
-          return;
-        }
-      }
-    }
-
-    function arenaSweep() {
-      let rowCount = 1;
-      outer: for (let y = arena.length - 1; y >= 0; --y) {
-        for (let x = 0; x < arena[y].length; ++x) {
-          if (arena[y][x] === 0) {
-            continue outer;
-          }
-        }
-        const row = arena.splice(y, 1)[0].fill(0);
-        arena.unshift(row);
-        y++;
-
-        score += rowCount * 10;
-        rowCount *= 2;
-      }
-    }
-
-    function playerReset() {
-      const pieces = 'TJLOSZI';
-    
-      if (!nextPiece) {
-        nextPiece = matrix[pieces[Math.floor(Math.random() * pieces.length)]].map(row => [...row]);
-      }
-    
-      player.matrix = nextPiece;
-      nextPiece = matrix[pieces[Math.floor(Math.random() * pieces.length)]].map(row => [...row]);
-    
-      player.pos.y = 0;
-      player.pos.x = Math.floor((arena[0].length / 2) - (player.matrix[0].length / 2));
-    
-      if (collide(arena, player)) {
-        arena.forEach(row => row.fill(0));
-        score = 0;
-        nextPiece = null;
-      }
-    }
-
-
-    const colors = [
-      null,
-      '#FF0D72',
-      '#0DC2FF',
-      '#0DFF72',
-      '#F538FF',
-      '#FF8E0D',
-      '#FFE138',
-      '#3877FF'
-    ];
-
-    const arena = createMatrix(12, 20);
-
-    const player = {
-      pos: {x: 0, y: 0},
-      matrix: null,
-    };
-
-    document.addEventListener('dblclick', function(e) {
-      e.preventDefault();
-    }, { passive: false });
-
-    document.addEventListener('keydown', event => {
-      if (event.key === 'ArrowLeft' || event.key === 'a') {
-        playerMove(-1);
-      } else if (event.key === 'ArrowRight' || event.key === 'd') {
-        playerMove(1);
-      } else if (event.key === 'ArrowDown' || event.key === 's') {
-        playerDrop();
-      } else if (event.key === 'ArrowUp' || event.key === 'w') {
-        playerRotate(1);
-      } else if (event.key === ' ') {
-        playerHardDrop();
-      } else if (event.key === 'p') {
-        isPaused = !isPaused;
-      }
-    });
-
-    let dropCounter = 0;
-    let dropInterval = 1000;
-
-    let lastTime = 0;
-    function update(time = 0) {
-      if (isPaused) {
-        requestAnimationFrame(update);
-        return;
-      }
-      const deltaTime = time - lastTime;
-      lastTime = time;
-
-      dropCounter += deltaTime;
-      if (dropCounter > dropInterval) {
-        playerDrop();
-      }
-
-      draw();
-      drawNext(); // neben draw() aufrufen
-      document.getElementById('score').innerText = 'Score: ' + score;
-      document.getElementById('highscore').innerText = 'Highscore: ' + highScoreTetris();
-      requestAnimationFrame(update);
-    }
-
-    const nextCanvas = document.getElementById('next');
-    const nextCtx = nextCanvas.getContext('2d');
-    nextCtx.scale(20, 20);
-    
-    function drawNext() {
-      nextCtx.fillStyle = '#000';
-      nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-    
-      if (!nextPiece) return;
-    
-      nextPiece.forEach((row, y) => {
-        row.forEach((value, x) => {
-          if (value) {
-            nextCtx.fillStyle = colors[value];
-            nextCtx.fillRect(x + 1, y + 1, 1, 1); // etwas zentriert
-          }
-        });
-      });
-    }
-
-    
-
-    playerReset();
-    loadGame();
-    update();
-  </script>
 </body>
 </html>
