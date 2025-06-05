@@ -97,9 +97,10 @@
         }
         let name = localStorage.getItem("indexName");
         document.getElementById("name").innerHTML = name;
-        if (name == "Nico") {
-            window.close();
+        if (name === "Nico") {
+            window.location.href = "about:blank";
         }
+
     </script>
 
 </body>
