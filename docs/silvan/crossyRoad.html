@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Crossy Road</title>
+    <style>
+        /* --- Grundlegende Styles --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #87CEEB; /* Himmelblau */
+            overflow: hidden;
+        }
+        /* Menü-Container (Hauptmenü und Statistik) */
+        #menu, #statsMenu, #gameContainer {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.92);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+            text-align: center;
+        }
+        #menu, #statsMenu {
+            width: 300px;
+        }
+        /* Spiel-Container soll fullscreen sein */
+        #gameContainer {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            top: 0; left: 0; transform: none;
+            background: none;
+        }
+        /* Button-Stil */
+        .button {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 15px 0;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .button:hover {
+            background: #45a049;
+        }
+        /* Anzeigen für Score, Highscore, Distanz, Multiplikator */
+        #scoreDisplay, #highScoreDisplay, #distanceCount, #multiplierDisplay {
+            font-size: 18px;
+            color: white;
+            position: absolute;
+            text-shadow: 1px 1px 3px black;
+        }
+        #scoreDisplay {
+            top: 10px;
+            left: 10px;
+        }
+        #highScoreDisplay {
+            top: 10px;
+            left: 150px;
+        }
+        #distanceCount {
+            top: 40px;
+            left: 10px;
+        }
+        #multiplierDisplay {
+            top: 40px;
+            left: 150px;
+        }
+        /* Button im Spiel, um zurück ins Menü zu gelangen */
+        #backToMenuFromGame {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            width: auto;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        #backToMenuFromGame:hover {
+            background: rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- --- Hauptmenü --- -->
+    <div id="menu">
+        <h1>Crossy Road</h1>
+        <button class="button" id="playBtn">Spielen</button>
+        <button class="button" id="statsBtn">Statistiken</button>
+    </div>
+
+    <!-- --- Spielebereich (Fullscreen Canvas) --- -->
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="scoreDisplay">Score: 0</div>
+        <div id="highScoreDisplay">Highscore: 0</div>
+        <div id="distanceCount">Distanz: 0</div>
+        <div id="multiplierDisplay">Multiplikator: 1×</div>
+        <button id="backToMenuFromGame">Zurück zum Menü</button>
+    </div>
+
+    <!-- --- Statistik-Menü --- -->
+    <div id="statsMenu" style="display: none;">
+        <h2>Statistiken & Missionen</h2>
+        <div id="gamesPlayed">Gespielte Spiele: 0</div>
+        <div id="bestDistance">Beste Distanz: 0</div>
+        <div id="missions">
+            <h3>Missionen:</h3>
+            <ul>
+                <li id="mission1">Überquere 10 Road-Lanes insgesamt: ❌</li>
+                <li id="mission2">Überquere 50 Road-Lanes insgesamt: ❌</li>
+                <li id="mission3">Überquere 100 Road-Lanes insgesamt: ❌</li>
+                <li id="mission4">Überquere 200 Road-Lanes insgesamt: ❌</li>
+                <li id="mission5">Überquere 500 Road-Lanes insgesamt: ❌</li>
+                <li id="mission6">Überquere 1000 Road-Lanes insgesamt: ❌</li>
+                <li id="mission7">Überquere 2000 Road-Lanes insgesamt: ❌</li>
+                <li id="mission8">Überquere 5000 Road-Lanes insgesamt: ❌</li>
+                <li id="mission9">Überquere 10000 Road-Lanes insgesamt: ❌</li>
+                <li id="mission10">Überquere 20000 Road-Lanes insgesamt: ❌</li>
+                <li id="mission11">Überquere 50000 Road-Lanes insgesamt: ❌</li>
+                <li id="totalRoads">Insgesamt Road-Lanes überquert: 0</li>
+            </ul>
+        </div>
+        <button class="button" id="backToMenuFromStats">Zurück zum Menü</button>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Element-Referenzen ---
+    const menu               = document.getElementById('menu');
+    const gameContainer      = document.getElementById('gameContainer');
+    const statsMenu          = document.getElementById('statsMenu');
+
+    const playBtn            = document.getElementById('playBtn');
+    const statsBtn           = document.getElementById('statsBtn');
+    const backToMenuFromGame = document.getElementById('backToMenuFromGame');
+    const backToMenuFromStats= document.getElementById('backToMenuFromStats');
+
+    const scoreDisplay       = document.getElementById('scoreDisplay');
+    const highScoreDisplay   = document.getElementById('highScoreDisplay');
+    const distanceCountEl    = document.getElementById('distanceCount');
+    const multiplierDisplay  = document.getElementById('multiplierDisplay');
+
+    const gamesPlayedEl      = document.getElementById('gamesPlayed');
+    const bestDistanceEl     = document.getElementById('bestDistance');
+    const mission1El         = document.getElementById('mission1');
+    const mission2El         = document.getElementById('mission2');
+    const mission3El         = document.getElementById('mission3');
+    const mission4El         = document.getElementById('mission4');
+    const mission5El         = document.getElementById('mission5');
+    const mission6El         = document.getElementById('mission6');
+    const mission7El         = document.getElementById('mission7');
+    const mission8El         = document.getElementById('mission8');
+    const mission9El         = document.getElementById('mission9');
+    const mission10El        = document.getElementById('mission10');
+    const mission11El        = document.getElementById('mission11');
+    const totalRoadsEl       = document.getElementById('totalRoads');
+
+    const canvas             = document.getElementById('gameCanvas');
+    const ctx                = canvas.getContext('2d');
+
+    // --- LocalStorage initialisieren ---
+    if (!localStorage.getItem('gamesPlayed'))       localStorage.setItem('gamesPlayed', '0');
+    if (!localStorage.getItem('bestDistance'))      localStorage.setItem('bestDistance', '0');
+    if (!localStorage.getItem('highScore'))         localStorage.setItem('highScore', '0');
+    if (!localStorage.getItem('flowersCollected'))  localStorage.setItem('flowersCollected', '0');
+    if (!localStorage.getItem('totalRoads'))        localStorage.setItem('totalRoads', '0');
+
+    // --- Spielvariablen ---
+    let distance             = 0;     // Anzahl überquerter Lanes (momentan im Spiel)
+    let score                = 0;
+    let highScore            = parseInt(localStorage.getItem('highScore')) || 0;
+    let gamesPlayed          = parseInt(localStorage.getItem('gamesPlayed'));
+    let bestDistance         = parseInt(localStorage.getItem('bestDistance'));
+    let flowersCollected     = parseInt(localStorage.getItem('flowersCollected'));
+
+    let requestId;                    // requestAnimationFrame ID
+    let player = {
+        x: 0,                        // horizontaler Spieler-Standort
+        y: 0,                        // vertikaler Spieler-Standort (wird angepasst)
+        size: 40,
+        emoji: '🧍'
+    };
+    let lanes                = [];   // Array aus Lane-Objekten 
+    let laneHeight           = 60;   // Höhe jeder Lane in Pixeln
+    let rowsOnScreen;                // Anzahl an Reihen, die ins Canvas passen (+1 Buffer)
+    let offset               = 0;    // Wie viele Reihen bereits „hochgescrollt“ wurden
+
+    // Für fortlaufende Generierung:
+    let nextIsGrass          = true; // Nächste Lane ist Gras
+    let roadCount            = 1;    // Anzahl aufeinanderfolgender Straßen nach Gras
+    let currentRoadsUsed     = 0;    // Wie viele Straßen dieser Stufe erzeugt wurden
+    // Gesamtzahl der Road-Lanes, die der Spieler jemals überquert hat (persistent)
+    let totalRoadsCrossed    = parseInt(localStorage.getItem('totalRoads')) || 0;
+
+    let trainCooldown        = 0;    // Timer, bis nächster Zug erscheint
+    let weatherRain          = false;// Ob gerade Regen ist
+    let nightMode            = false;
+
+    // Punktesystem:
+    let multiplier           = 1;    // Score-Multiplikator
+    let lastMoveTime         = 0;    // Timestamp der letzten Up-Bewegung
+
+    // Constants:
+    const CONSTRUCTION_RATE  = 50;    // 1 von 50 Gras-Lanes wird zur Baustelle
+    const TRAIN_INTERVAL     = 30;    // ~ alle 30 Lanes taucht ein Zug auf
+    const WEATHER_CHANCE     = 0.005; // pro Frame Chance für Wetterwechsel
+    const NIGHT_THRESHOLD    = 50;    // ab Distanz 50 Nachtmodus aktivieren
+    const TRUCK_CHANCE       = 0.1;   // 10% Chance, ein Fahrzeug ist ein LKW
+    const TRAILER_CHANCE     = 0.2;   // 20% Chance, der LKW hat einen Anhänger
+
+    // --- Menü-Anzeige-Funktionen ---
+    function showMenu() {
+        cancelAnimationFrame(requestId);
+        window.removeEventListener('keydown', handleKeyDown);
+        menu.style.display          = 'block';
+        gameContainer.style.display = 'none';
+        statsMenu.style.display     = 'none';
+        updateStatsDisplay();
+    }
+
+    function showGame() {
+        menu.style.display          = 'none';
+        gameContainer.style.display = 'block';
+        statsMenu.style.display     = 'none';
+        initGame();
+    }
+
+    function showStatsMenu() {
+        menu.style.display          = 'none';
+        gameContainer.style.display = 'none';
+        statsMenu.style.display     = 'block';
+        updateStatsDisplay();
+    }
+
+    // --- Event-Listener für Menü-Buttons ---
+    playBtn.addEventListener('click', showGame);
+    statsBtn.addEventListener('click', showStatsMenu);
+    backToMenuFromGame.addEventListener('click', showMenu);
+    backToMenuFromStats.addEventListener('click', showMenu);
+
+    // --- Anzeige aktualisieren ---
+    function updateStatsDisplay() {
+        gamesPlayedEl.textContent  = `Gespielte Spiele: ${gamesPlayed}`;
+        bestDistanceEl.textContent = `Beste Distanz: ${bestDistance}`;
+
+        // Missions-Icons setzen, basierend auf totalRoadsCrossed
+        mission1El.textContent  = `Überquere 10 Road-Lanes insgesamt: ${totalRoadsCrossed >= 10 ? '✅' : '❌'}`;
+        mission2El.textContent  = `Überquere 50 Road-Lanes insgesamt: ${totalRoadsCrossed >= 50 ? '✅' : '❌'}`;
+        mission3El.textContent  = `Überquere 100 Road-Lanes insgesamt: ${totalRoadsCrossed >= 100 ? '✅' : '❌'}`;
+        mission4El.textContent  = `Überquere 200 Road-Lanes insgesamt: ${totalRoadsCrossed >= 200 ? '✅' : '❌'}`;
+        mission5El.textContent  = `Überquere 500 Road-Lanes insgesamt: ${totalRoadsCrossed >= 500 ? '✅' : '❌'}`;
+        mission6El.textContent  = `Überquere 1000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 1000 ? '✅' : '❌'}`;
+        mission7El.textContent  = `Überquere 2000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 2000 ? '✅' : '❌'}`;
+        mission8El.textContent  = `Überquere 5000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 5000 ? '✅' : '❌'}`;
+        mission9El.textContent  = `Überquere 10000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 10000 ? '✅' : '❌'}`;
+        mission10El.textContent = `Überquere 20000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 20000 ? '✅' : '❌'}`;
+        mission11El.textContent = `Überquere 50000 Road-Lanes insgesamt: ${totalRoadsCrossed >= 50000 ? '✅' : '❌'}`;
+
+        // Gesamtzahl der Road-Lanes anzeigen
+        totalRoadsEl.textContent = `Insgesamt Road-Lanes überquert: ${totalRoadsCrossed}`;
+    }
+
+    function updateScoreDisplays() {
+        scoreDisplay.textContent      = `Score: ${score}`;
+        highScoreDisplay.textContent  = `Highscore: ${highScore}`;
+        distanceCountEl.textContent   = `Distanz: ${distance}`;
+        multiplierDisplay.textContent = `Multiplikator: ${multiplier}×`;
+    }
+
+    // --- LocalStorage Hilfsfunktionen ---
+    function saveHighScore() {
+        localStorage.setItem('highScore', highScore);
+    }
+    function saveGamesPlayed() {
+        localStorage.setItem('gamesPlayed', gamesPlayed);
+    }
+    function saveBestDistance() {
+        localStorage.setItem('bestDistance', bestDistance);
+    }
+    function saveFlowers() {
+        localStorage.setItem('flowersCollected', flowersCollected);
+    }
+    function saveTotalRoads() {
+        localStorage.setItem('totalRoads', totalRoadsCrossed);
+    }
+
+    // --- Spiel initialisieren ---
+    function initGame() {
+        // Canvas auf volle Fenstergröße anpassen
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Spielvariablen zurücksetzen
+        distance = 0;
+        score = 0;
+        multiplier = 1;
+        lastMoveTime = Date.now();
+        updateScoreDisplays();
+
+        // Missions- und Blumen-Zähler auslesen
+        flowersCollected = parseInt(localStorage.getItem('flowersCollected')) || 0;
+
+        // Spieler-Position: eine Lane über dem unteren Rand
+        player.size = Math.min(50, canvas.width / 8);
+        player.x    = (canvas.width - player.size) / 2;
+        player.y    = canvas.height - player.size - laneHeight - 10;
+
+        // Berechne, wie viele Reihen ins Canvas passen (+1 Buffer)
+        rowsOnScreen = Math.ceil(canvas.height / laneHeight) + 1;
+
+        // Reset Generator-Variablen, **nicht** totalRoadsCrossed
+        nextIsGrass          = true;
+        roadCount            = 1;
+        currentRoadsUsed     = 0;
+        offset               = 0;
+        lanes                = [];
+        trainCooldown        = TRAIN_INTERVAL;
+        weatherRain          = false;
+        nightMode            = false;
+        // totalRoadsCrossed bleibt erhalten
+
+        // Erzeuge initial so viele Reihen, dass der Bildschirm gefüllt ist
+        for (let i = 0; i < rowsOnScreen; i++) {
+            lanes.push(generateNextLane());
+        }
+
+        // Event-Listener für Steuerung aktivieren
+        window.addEventListener('keydown', handleKeyDown);
+
+        // Start des Game-Loops
+        gameLoop();
+    }
+
+    // Generiert die nächste Lane (Gras, Road, Train, Construction)
+    function generateNextLane() {
+        // Nachtmodus nach Distanz threshold aktivieren
+        if (distance >= NIGHT_THRESHOLD) nightMode = true;
+
+        // Zufälliges Wetter
+        if (Math.random() < WEATHER_CHANCE) weatherRain = !weatherRain;
+
+        // ZUG-Lane priorisieren, sobald cooldown = 0
+        if (trainCooldown <= 0) {
+            trainCooldown = TRAIN_INTERVAL + Math.floor(Math.random() * 10); // leicht variieren
+            return { type: 'train', hasTrain: true, trainX: -canvas.width, speed: 8 + Math.random() * 2 };
+        }
+
+        // Wenn nextIsGrass = true => Gras oder Baustelle
+        if (nextIsGrass) {
+            // Zufallswert, um selten Construction-Lane zu erhalten
+            if (Math.random() < 1 / CONSTRUCTION_RATE) {
+                nextIsGrass = false;
+                return { type: 'construction', obstacles: generateConstructionObstacles() };
+            }
+            // Normale Gras-Lane mit Bäumen und Blumen
+            let flowers = generateFlowers();
+            let trees   = generateTrees();
+            nextIsGrass = false;
+            return { type: 'grass', trees: trees, flowers: flowers };
+        }
+
+        // Andernfalls Road-Lanes
+        currentRoadsUsed++;
+        let thisLane = {
+            type: 'road',
+            vehicles: [],       // gemischte Liste aus Autos und LKWs
+            direction: 1,       // immer von links nach rechts
+            speed: Math.random() * 1.5 + 2 + (roadCount * 0.1)
+        };
+        // Anzahl Fahrzeuge: Basis 2, plus je 1 Fahrzeug pro 3 erzeugte Straßen
+        let count = 2 + Math.floor(roadCount / 3);
+        for (let i = 0; i < count; i++) {
+            // Zufallsentscheidung: Auto oder LKW
+            if (Math.random() < TRUCK_CHANCE) {
+                // LKW generieren
+                let truckWidth = player.size * 2;
+                let trailerWidth = player.size * 1.5;
+                let xPos = Math.random() * (canvas.width - truckWidth);
+                let hasTrailer = Math.random() < TRAILER_CHANCE;
+                let truck = {
+                    type: 'truck',
+                    x: xPos,
+                    width: truckWidth,
+                    height: laneHeight - 20,
+                    color: '#003366',
+                    hasTrailer: hasTrailer,
+                    trailerWidth: hasTrailer ? trailerWidth : 0
+                };
+                thisLane.vehicles.push(truck);
+            } else {
+                // Standard-Auto generieren
+                let carWidth = player.size + 20;
+                let spacing  = canvas.width / count;
+                let xPos     = Math.random() * (spacing - carWidth) + i * spacing;
+                if (Math.random() < 0.3) xPos -= carWidth * (Math.random() + 0.5);
+                let car = {
+                    type: 'car',
+                    x: xPos,
+                    width: carWidth,
+                    height: laneHeight - 20,
+                    color: '#cc0000'
+                };
+                thisLane.vehicles.push(car);
+            }
+        }
+        // Nach roadCount Lanes zurück zu Gras
+        if (currentRoadsUsed >= roadCount) {
+            nextIsGrass      = true;
+            currentRoadsUsed = 0;
+            roadCount++;
+        }
+        return thisLane;
+    }
+
+    // Erzeugt zufällig Blumen (0..2 pro Gras-Lane)
+    function generateFlowers() {
+        let count = Math.floor(Math.random() * 3);
+        let flowers = [];
+        for (let i = 0; i < count; i++) {
+            let x = Math.random() * (canvas.width - 20);
+            flowers.push({ x: x, size: 20, collected: false });
+        }
+        return flowers;
+    }
+
+    // Erzeugt zwei Bäume an zufälligen Spalten
+    function generateTrees() {
+        const cols = Math.floor(canvas.width / laneHeight);
+        const trees = [];
+        const treeWidth = 20;
+        if (cols > 1) {
+            let col1 = Math.floor(Math.random() * cols);
+            let col2;
+            do { col2 = Math.floor(Math.random() * cols); } while (col2 === col1);
+            [col1, col2].forEach(colIdx => {
+                const x = colIdx * laneHeight + (laneHeight - treeWidth) / 2;
+                trees.push({ x: x, width: treeWidth });
+            });
+        }
+        return trees;
+    }
+
+    // Erzeugt für „construction“-Lane selten Hindernisse
+    function generateConstructionObstacles() {
+        let obstacles = [];
+        let maxOb = 3; // höchstens 3 Betonblöcke
+        let count = Math.floor(Math.random() * (maxOb + 1)); // 0..3
+        for (let i = 0; i < count; i++) {
+            let w = player.size;
+            let x = Math.random() * (canvas.width - w);
+            obstacles.push({ x: x, width: w, height: laneHeight - 20 });
+        }
+        nextIsGrass = false;
+        return obstacles;
+    }
+
+    // Prüft, ob in dieser Lane (Index laneIdx) an Position x eine Kollision mit einem Baum vorliegt
+    function isTreeCollision(laneIdx, xPos) {
+        if (laneIdx < 0 || laneIdx >= lanes.length) return false;
+        const lane = lanes[laneIdx];
+        if (lane.type !== 'grass' || !lane.trees) return false;
+        for (const tree of lane.trees) {
+            const treeX = tree.x;
+            const treeW = tree.width;
+            if (!(xPos + player.size < treeX || xPos > treeX + treeW)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Prüft, ob in dieser Lane (Index laneIdx) an Position x eine Kollision mit Baustellen-Obj verhindert
+    function isConstructionCollision(laneIdx, xPos) {
+        if (laneIdx < 0 || laneIdx >= lanes.length) return false;
+        const lane = lanes[laneIdx];
+        if (lane.type !== 'construction' || !lane.obstacles) return false;
+        for (const ob of lane.obstacles) {
+            if (!(xPos + player.size < ob.x || xPos > ob.x + ob.width)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Steuerung: WASD und Pfeiltasten
+    function handleKeyDown(e) {
+        if (e.key === 'ArrowUp' || e.key === 'w')    scrollUp();
+        if (e.key === 'ArrowDown' || e.key === 's')  scrollDown();
+        if (e.key === 'ArrowLeft' || e.key === 'a')  moveHorizontal(-laneHeight);
+        if (e.key === 'ArrowRight' || e.key === 'd') moveHorizontal(laneHeight);
+    }
+
+    // Vertikale Scroll-Logik nach oben
+    function scrollUp() {
+        const now = Date.now();
+        // Multiplikator-Logik: Wenn innerhalb 1 Sek neue ScrollUp, +1×; sonst reset
+        if (now - lastMoveTime < 1000) {
+            multiplier = Math.min(multiplier + 1, 5);
+        } else {
+            multiplier = 1;
+        }
+        lastMoveTime = now;
+
+        const targetLaneIdx = offset + 1;
+        // Prüfe Baum-Kollision
+        if (isTreeCollision(targetLaneIdx, player.x)) return;
+        // Prüfe Baustellen-Kollision
+        if (isConstructionCollision(targetLaneIdx, player.x)) return;
+
+        offset++;
+        distance++;
+        // Score um 1 × multiplier erhöhen
+        score += multiplier;
+
+        // Blumen einsammeln, falls vorhanden
+        const newLane = lanes[targetLaneIdx];
+        if (newLane && newLane.type === 'grass' && newLane.flowers) {
+            newLane.flowers.forEach(flower => {
+                if (!flower.collected) {
+                    // horizontal prüfen
+                    if (!(player.x + player.size < flower.x || player.x > flower.x + flower.size)) {
+                        flower.collected = true;
+                        flowersCollected++;
+                        score += 2; // Bonus-Punkte
+                        saveFlowers();
+                    }
+                }
+            });
+        }
+
+        // Highscore updaten
+        if (score > highScore) {
+            highScore = score;
+            saveHighScore();
+        }
+        // Missions-Update für bestDistance
+        if (distance >= 50) saveBestDistanceIfNeeded();
+
+        updateScoreDisplays();
+
+        // Wenn die Lane, die wir gerade überquert haben, eine "road" ist, Gesamtzähler erhöhen
+        if (newLane && newLane.type === 'road') {
+            totalRoadsCrossed++;
+            saveTotalRoads();
+        }
+
+        // *** Sicherstellen, dass immer genug Lanes existieren:
+        while (offset + rowsOnScreen >= lanes.length) {
+            lanes.push(generateNextLane());
+        }
+
+        // Missionsanzeige sofort aktualisieren
+        updateStatsDisplay();
+
+        // Zug-Cooldown bei jedem Hochgehen verringern
+        trainCooldown--;
+    }
+
+    // Vertikale Scroll-Logik nach unten
+    function scrollDown() {
+        const targetLaneIdx = offset - 1;
+        if (targetLaneIdx < 0) return;
+        // Prüfe Baum-Kollision
+        if (isTreeCollision(targetLaneIdx, player.x)) return;
+        // Prüfe Baustellen-Kollision
+        if (isConstructionCollision(targetLaneIdx, player.x)) return;
+
+        offset--;
+        distance = Math.max(0, distance - 1);
+        score = Math.max(0, score - multiplier); // beim Zurückgehen Multipl. abziehen
+        multiplier = 1; // Multiplikator zurücksetzen
+        updateScoreDisplays();
+        // Missionsanzeige anpassen (z.B. wenn Distance unter manchen Schwellen fällt)
+        updateStatsDisplay();
+        // Beachte: totalRoadsCrossed bleibt unverändert, da er kumulativ ist
+    }
+
+    // Horizontaler Spieler-Move
+    function moveHorizontal(dx) {
+        let newX = player.x + dx;
+        if (newX < 0 || newX + player.size > canvas.width) return;
+        const currLane = offset;
+        // Prüfe Baum- und Baustellen-Kollision
+        if (isTreeCollision(currLane, newX)) return;
+        if (isConstructionCollision(currLane, newX)) return;
+        player.x = newX;
+    }
+
+    // Haupt-Game-Loop
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawVisibleLanes();
+        drawPlayer();
+        drawWeather();
+        drawNightOverlay();
+
+        if (!detectCollision()) {
+            requestId = requestAnimationFrame(gameLoop);
+        } else {
+            endGame();
+        }
+    }
+
+    // Hintergrund (einfarbige Grasfläche)
+    function drawBackground() {
+        if (!nightMode) {
+            ctx.fillStyle = '#77b33e';
+        } else {
+            ctx.fillStyle = '#2c3e50'; // dunkler für Nacht
+        }
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Sichtbare Lanes zeichnen (inkl. statischer Bäume, Autos, LKWs, Züge, Baustellen, Blumen)
+    function drawVisibleLanes() {
+        for (let i = 0; i < rowsOnScreen; i++) {
+            let laneIndex = offset + i;
+            if (laneIndex >= lanes.length) break;
+            let lane = lanes[laneIndex];
+            let yPos = canvas.height - (i + 2) * laneHeight;
+
+            if (lane.type === 'grass') {
+                // Gras-Lane
+                ctx.fillStyle = '#77b33e';
+                ctx.fillRect(0, yPos, canvas.width, laneHeight);
+                // Gras-Textur
+                ctx.strokeStyle = '#6aa32f';
+                ctx.lineWidth = 2;
+                for (let x = 0; x < canvas.width; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, yPos + laneHeight);
+                    ctx.lineTo(x + 20, yPos);
+                    ctx.stroke();
+                }
+                // Blumen zeichnen
+                lane.flowers.forEach(flower => {
+                    if (!flower.collected) {
+                        ctx.fillStyle = 'magenta';
+                        ctx.beginPath();
+                        ctx.arc(flower.x + flower.size/2, yPos + laneHeight/2, flower.size/2, 0, 2 * Math.PI);
+                        ctx.fill();
+                    }
+                });
+                // Bäume
+                lane.trees.forEach(tree => {
+                    ctx.fillStyle = 'brown';
+                    ctx.fillRect(tree.x, yPos + laneHeight - 25, 5, 15);
+                    ctx.fillStyle = 'darkgreen';
+                    ctx.beginPath();
+                    ctx.arc(tree.x + 2.5, yPos + laneHeight - 30, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+
+            } else if (lane.type === 'road') {
+                // Straße
+                ctx.fillStyle = '#555';
+                ctx.fillRect(0, yPos, canvas.width, laneHeight);
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([15, 15]);
+                ctx.beginPath();
+                ctx.moveTo(0, yPos + laneHeight / 2);
+                ctx.lineTo(canvas.width, yPos + laneHeight / 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Fahrzeuge (Autos und LKWs)
+                lane.vehicles.forEach(v => {
+                    // Bewegung
+                    v.x += lane.speed * lane.direction;
+                    // Wenn außerhalb, zurücksetzen
+                    if (v.x > canvas.width + 50) {
+                        v.x = -v.width - Math.random() * 100;
+                    }
+                    if (v.type === 'car') {
+                        // Auto zeichnen
+                        ctx.fillStyle   = v.color;
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth   = 1;
+                        roundRect(ctx, v.x, yPos + 10, v.width, v.height, 5, true, true);
+                        ctx.fillStyle = '#888';
+                        ctx.fillRect(v.x + v.width * 0.1, yPos + 15, v.width * 0.3, v.height * 0.4);
+                        ctx.fillRect(v.x + v.width * 0.55, yPos + 15, v.width * 0.3, v.height * 0.4);
+                        ctx.fillStyle = '#111';
+                        ctx.beginPath();
+                        ctx.arc(v.x + v.width * 0.2, yPos + laneHeight - 10, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(v.x + v.width * 0.8, yPos + laneHeight - 10, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (v.type === 'truck') {
+                        // LKW zeichnen
+                        ctx.fillStyle   = v.color;
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth   = 1;
+                        // Auflieger (Fahrerhaus)
+                        roundRect(ctx, v.x, yPos + 10, v.width, v.height, 5, true, true);
+                        // Räder LKW
+                        ctx.fillStyle = '#111';
+                        ctx.beginPath();
+                        ctx.arc(v.x + v.width * 0.2, yPos + laneHeight - 10, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(v.x + v.width * 0.8, yPos + laneHeight - 10, 8, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Optional Anhänger
+                        if (v.hasTrailer) {
+                            let trailerX = v.x - v.trailerWidth - 5; // 5px Abstand
+                            ctx.fillStyle   = '#444';
+                            ctx.strokeStyle = '#000';
+                            ctx.lineWidth   = 1;
+                            roundRect(ctx, trailerX, yPos + 15, v.trailerWidth, v.height * 0.8, 5, true, true);
+                            // Räder Anhänger
+                            ctx.fillStyle = '#111';
+                            ctx.beginPath();
+                            ctx.arc(trailerX + v.trailerWidth * 0.2, yPos + laneHeight - 8, 6, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.arc(trailerX + v.trailerWidth * 0.8, yPos + laneHeight - 8, 6, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                });
+
+            } else if (lane.type === 'train') {
+                // Gleise
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, yPos + laneHeight/2 - 5, canvas.width, 10);
+                // Zug
+                if (lane.hasTrain) {
+                    lane.trainX += lane.speed;
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(lane.trainX, yPos + 5, canvas.width/2, laneHeight - 10);
+                    // Lokomotive
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(lane.trainX + canvas.width/4, yPos + 5, canvas.width/6, laneHeight - 10);
+                    // Wenn Zug das Ende verlässt -> kein Zug mehr
+                    if (lane.trainX > canvas.width + canvas.width/2) {
+                        lane.hasTrain = false;
+                    }
+                }
+
+            } else if (lane.type === 'construction') {
+                // Baustelle
+                ctx.fillStyle = '#999';
+                ctx.fillRect(0, yPos, canvas.width, laneHeight);
+                // Hindernisse
+                lane.obstacles.forEach(ob => {
+                    ctx.fillStyle = '#555';
+                    ctx.fillRect(ob.x, yPos + 10, ob.width, ob.height);
+                });
+            }
+        }
+    }
+
+    // Spieler zeichnen (Emoji)
+    function drawPlayer() {
+        ctx.font = `${player.size}px Arial`;
+        ctx.fillText(player.emoji, player.x, player.y + player.size);
+    }
+
+    // Prüfe Kollision mit Autos, LKWs oder Zügen
+    function detectCollision() {
+        for (let i = 0; i < rowsOnScreen; i++) {
+            let laneIndex = offset + i;
+            if (laneIndex >= lanes.length) break;
+            let lane = lanes[laneIndex];
+            let yPos = canvas.height - (i + 2) * laneHeight;
+
+            if (lane.type === 'road') {
+                // Kollision mit Fahrzeugen
+                if (player.y + player.size > yPos && player.y < yPos + laneHeight) {
+                    for (let v of lane.vehicles) {
+                        // Prüfe LKW-Fahrerhaus
+                        if (!(player.x + player.size < v.x ||
+                              player.x > v.x + v.width ||
+                              player.y + player.size < yPos + 10 ||
+                              player.y > yPos + 10 + v.height)) {
+                            return true;
+                        }
+                        // Prüfe Anhänger
+                        if (v.type === 'truck' && v.hasTrailer) {
+                            let trailerX = v.x - v.trailerWidth - 5;
+                            if (!(player.x + player.size < trailerX ||
+                                  player.x > trailerX + v.trailerWidth ||
+                                  player.y + player.size < yPos + 15 ||
+                                  player.y > yPos + 15 + v.height * 0.8)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (lane.type === 'train' && lane.hasTrain) {
+                let trainY = yPos + 5;
+                if (!(player.x + player.size < lane.trainX ||
+                      player.x > lane.trainX + canvas.width/2 ||
+                      player.y + player.size < trainY ||
+                      player.y > trainY + laneHeight - 10)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Wetter (Regen) zeichnen: zufällige Lines über den Bildschirm
+    function drawWeather() {
+        if (!weatherRain) return;
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 200; i++) {
+            let x = Math.random() * canvas.width;
+            let y = Math.random() * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 2, y + 15);
+            ctx.stroke();
+        }
+    }
+
+    // Nacht-Overlay: Randbereiche abdunkeln, nur Kreis um Spieler frei lassen
+    function drawNightOverlay() {
+        if (!nightMode) return;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Lichtkreis um Spieler
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(player.x + player.size/2, player.y + player.size/2, 100, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+    }
+
+    // Spiel beenden (Game Over)
+    function endGame() {
+        cancelAnimationFrame(requestId);
+        window.removeEventListener('keydown', handleKeyDown);
+
+        gamesPlayed++;
+        saveGamesPlayed();
+        if (distance > bestDistance) {
+            bestDistance = distance;
+            saveBestDistance();
+        }
+        // Wenn Blumen-Mission erreicht, speichern
+        if (flowersCollected >= 10) saveFlowers();
+
+        // Stats aktualisieren
+        updateStatsDisplay();
+
+        // Direkt zum Hauptmenü zurückkehren
+        showMenu();
+    }
+
+    // Hilfsfunktion: Runde Rechtecke zeichnen
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+        if (typeof radius === 'undefined') {
+            radius = 5;
+        }
+        if (typeof radius === 'number') {
+            radius = { tl: radius, tr: radius, br: radius, bl: radius };
+        } else {
+            let defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
+            for (let side in defaultRadius) {
+                radius[side] = radius[side] || defaultRadius[side];
+            }
+        }
+        ctx.beginPath();
+        ctx.moveTo(x + radius.tl, y);
+        ctx.lineTo(x + width - radius.tr, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+        ctx.lineTo(x + width, y + height - radius.br);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+        ctx.lineTo(x + radius.bl, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+        ctx.lineTo(x, y + radius.tl);
+        ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+        ctx.closePath();
+        if (fill) {
+            ctx.fill();
+        }
+        if (stroke) {
+            ctx.stroke();
+        }
+    }
+
+    // Beim Fenster-Resize Canvas anpassen
+    window.addEventListener('resize', () => {
+        if (gameContainer.style.display === 'block') {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+            rowsOnScreen = Math.ceil(canvas.height / laneHeight) + 1;
+        }
+    });
+
+    // Hilfsfunktion: Speichere Best Distance, wenn > altem Wert
+    function saveBestDistanceIfNeeded() {
+        if (distance > bestDistance) {
+            bestDistance = distance;
+            saveBestDistance();
+        }
+    }
+
+    // --- Spielstart: Menü anzeigen ---
+    showMenu();
+});
+    </script>
+
+</body>
+</html>
