@@ -5,13 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Flaggen-Quiz</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align:center; background:#f4f4f4; padding:20px; }
-    #flag { width:300px; height:200px; margin:20px auto; 
-      background-size:contain; background-repeat:no-repeat; background-position:center; border:2px solid #ccc; }
-    .options, #inputMode { max-width:300px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
-    button, input { padding:10px; font-size:16px; cursor:pointer; }
-    #result { margin-top:20px; font-weight:bold; }
-    #modeToggle { margin-bottom:20px; cursor:pointer; color:blue; text-decoration:underline; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    #flag {
+      width: 300px;
+      height: 200px;
+      margin: 20px auto;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 2px solid #ccc;
+    }
+    .options, #inputMode {
+      max-width: 300px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button, input {
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    #modeToggle {
+      margin-bottom: 20px;
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -30,24 +60,21 @@
     let countries = [], correct = null, mode = 'mc';
 
     async function loadCountries() {
-  try {
-    const proxy = 'https://api.allorigins.win/raw?url=';
-    const url = encodeURIComponent('https://restcountries.com/v3.1/all');
-    const res = await fetch(proxy + url);
-    const data = await res.json();
-    countries = data.map(c => ({
-      name: c.name.common,
-      code: c.cca2.toLowerCase()
-    }));
-    nextQuestion();
-  } catch (e) {
-    document.body.innerHTML = '<p>Fehler beim Laden der Länder-Daten (CORS).</p>';
-    console.error(e);
-  }
-}
-
-
-    loadCountries();
+      try {
+        const proxy = 'https://api.allorigins.win/raw?url=';
+        const apiUrl = 'https://restcountries.com/v3.1/all';
+        const res = await fetch(proxy + encodeURIComponent(apiUrl));
+        const data = await res.json();
+        countries = data.map(c => ({
+          name: c.name.common,
+          code: c.cca2?.toLowerCase()
+        })).filter(c => c.code); // Nur Länder mit gültigem Code
+        nextQuestion();
+      } catch (e) {
+        document.body.innerHTML = '<p>❌ Fehler beim Laden der Länder-Daten (CORS).</p>';
+        console.error(e);
+      }
+    }
 
     function shuffle(a) {
       for (let i = a.length - 1; i > 0; i--) {
@@ -61,7 +88,6 @@
       correct = countries[Math.floor(Math.random() * countries.length)];
       const flagUrl = `https://flagcdn.com/w320/${correct.code}.png`;
       document.getElementById('flag').style.backgroundImage = `url(${flagUrl})`;
-
       if (mode === 'mc') setupMC(); else setupText();
     }
 
@@ -110,6 +136,9 @@
         mode === 'mc' ? 'Zum Freitext-Modus wechseln' : 'Zum Multiple‑Choice‑Modus wechseln';
       nextQuestion();
     };
+
+    // Lade Länder beim Start
+    loadCountries();
   </script>
 </body>
 </html>
