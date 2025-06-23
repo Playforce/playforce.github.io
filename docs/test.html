@@ -30,19 +30,22 @@
     let countries = [], correct = null, mode = 'mc';
 
     async function loadCountries() {
-      try {
-        const res = await fetch('https://restcountries.com/v3.1/all');
-        const data = await res.json();
-        countries = data.map(c => ({
-          name: c.name.common,
-          code: c.cca2.toLowerCase()
-        }));
-        nextQuestion();
-      } catch (e) {
-        document.body.innerHTML = '<p>Fehler beim Laden der Länder‑Daten.</p>';
-        console.error(e);
-      }
-    }
+  try {
+    const proxy = 'https://api.allorigins.win/raw?url=';
+    const url = encodeURIComponent('https://restcountries.com/v3.1/all');
+    const res = await fetch(proxy + url);
+    const data = await res.json();
+    countries = data.map(c => ({
+      name: c.name.common,
+      code: c.cca2.toLowerCase()
+    }));
+    nextQuestion();
+  } catch (e) {
+    document.body.innerHTML = '<p>Fehler beim Laden der Länder-Daten (CORS).</p>';
+    console.error(e);
+  }
+}
+
 
     loadCountries();
 
