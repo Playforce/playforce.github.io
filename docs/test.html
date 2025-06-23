@@ -1,95 +1,135 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flaggen-Quiz</title>
-<style>
-  body { font-family: Arial, sans-serif; text-align:center; background:#f4f4f4; padding:20px; }
-  #flag { width:300px; height:200px; margin:20px auto; background-size:cover; border:2px solid #ccc; }
-  .options, #inputMode { max-width:300px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
-  button, input { padding:10px; font-size:16px; }
-  #result { margin-top:20px; font-weight:bold; }
-  #modeToggle { margin-bottom:20px; cursor:pointer; text-decoration:underline; color:blue; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flaggen-Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    #flag {
+      margin: 20px auto;
+      width: 300px; height: 200px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      border: 2px solid #ccc;
+    }
+    .options, #inputMode {
+      max-width: 300px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    button, input {
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #result { margin-top: 20px; font-weight: bold; }
+    #modeToggle { margin-bottom: 20px; cursor: pointer; color: blue; text-decoration: underline; }
+  </style>
 </head>
 <body>
-<h1>🌍 Flaggen-Quiz</h1>
-<div id="modeToggle">Zum Freitext-Modus wechseln</div>
-<div id="flag"></div>
-<div class="options" id="options"></div>
-<div id="inputMode" style="display:none;">
-  <input type="text" id="textAnswer" placeholder="Land eingeben…">
-  <button id="submitText">Antwort prüfen</button>
-  <button id="skip">Überspringen</button>
-</div>
-<div id="result"></div>
+  <h1>🌍 Flaggen-Quiz</h1>
+  <div id="modeToggle">Zum Freitext-Modus wechseln</div>
+  <div id="flag"></div>
+  <div class="options" id="options"></div>
+  <div id="inputMode" style="display:none;">
+    <input type="text" id="textAnswer" placeholder="Land eingeben…" />
+    <button id="submitText">Antwort prüfen</button>
+    <button id="skip">Überspringen</button>
+  </div>
+  <div id="result"></div>
 
-<script>
-let countries = [], correct = null, mode = 'mc';
+  <script>
+    let countries = [];
+    let correct = null;
+    let mode = 'mc';
 
-// Länderdaten via API laden
-async function loadCountries() {
-  const res = await fetch('https://www.apicountries.com/countries');
-  countries = await res.json();
-  newQuestion();
-}
-loadCountries();
-
-function shuffle(a){ for(let i=a.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];}}
-
-function newQuestion(){
-  document.getElementById('result').textContent = '';
-  const randIdx = Math.floor(Math.random()*countries.length);
-  correct = countries[randIdx];
-  document.getElementById('flag').style.backgroundImage = `url(${correct.flags.png})`;
-
-  if(mode==='mc'){
-    const opts=[correct.name];
-    shuffle(countries);
-    for(let c of countries){
-      if(opts.length==4)break;
-      if(c.name!==correct.name) opts.push(c.name);
+    // Länder + Flaggen via ApiCountries laden
+    async function loadCountries(){
+      try {
+        const res = await fetch('https://www.apicountries.com/countries');
+        countries = await res.json();
+        nextQuestion();
+      } catch(e){
+        document.body.innerHTML = '<p>Fehler beim Laden der Länder‑Daten.</p>';
+        console.error(e);
+      }
     }
-    shuffle(opts);
-    const div=document.getElementById('options'); div.innerHTML='';
-    opts.forEach(name=>{
-      const b=document.createElement('button'); b.textContent=name;
-      b.onclick=()=>{
-        if(name===correct.name) showResult(true);
-        else showResult(false);
-      };
-      div.appendChild(b);
-    });
-    document.getElementById('options').style.display='flex';
-    document.getElementById('inputMode').style.display='none';
-  } else {
-    document.getElementById('options').style.display='none';
-    document.getElementById('inputMode').style.display='flex';
-    document.getElementById('textAnswer').value='';
-  }
-}
+    loadCountries();  // initial load
 
-function showResult(ok){
-  const res=document.getElementById('result');
-  res.textContent = ok ? '✅ Richtig!' : `❌ Falsch! Antwort: ${correct.name}`;
-  setTimeout(newQuestion,1500);
-}
+    function shuffle(a){
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+    }
 
-// Freitext‑Antwort prüfen
-document.getElementById('submitText').onclick = ()=>{
-  const ans=document.getElementById('textAnswer').value.trim().toLowerCase();
-  showResult(ans === correct.name.toLowerCase());
-};
-document.getElementById('skip').onclick = ()=> newQuestion();
+    function nextQuestion(){
+      document.getElementById('result').textContent = '';
+      correct = countries[Math.floor(Math.random() * countries.length)];
+      document.getElementById('flag').style.backgroundImage = `url(${correct.flags.png})`;
 
-// Modus wechseln
-document.getElementById('modeToggle').onclick = ()=>{
-  mode = mode==='mc' ? 'text' : 'mc';
-  document.getElementById('modeToggle').textContent = mode==='mc'
-    ? 'Zum Freitext-Modus wechseln' : 'Zum Multiple-Choice wechseln';
-  newQuestion();
-};
-</script>
+      if(mode === 'mc'){
+        startMC();
+      } else {
+        startText();
+      }
+    }
+
+    function startMC(){
+      const opts = [correct.name];
+      shuffle(countries);
+      for(let c of countries){
+        if(opts.length >= 4) break;
+        if(c.name !== correct.name) opts.push(c.name);
+      }
+      shuffle(opts);
+
+      const div = document.getElementById('options');
+      div.innerHTML = '';
+      opts.forEach(name => {
+        const b = document.createElement('button');
+        b.textContent = name;
+        b.onclick = () => answer(name === correct.name);
+        div.appendChild(b);
+      });
+
+      document.getElementById('options').style.display = 'flex';
+      document.getElementById('inputMode').style.display = 'none';
+    }
+
+    function startText(){
+      document.getElementById('options').style.display = 'none';
+      document.getElementById('inputMode').style.display = 'flex';
+      document.getElementById('textAnswer').value = '';
+    }
+
+    function answer(ok){
+      const res = document.getElementById('result');
+      res.textContent = ok ? '✅ Richtig!' : `❌ Falsch! Richtige Antwort: ${correct.name}`;
+      setTimeout(nextQuestion, 1500);
+    }
+
+    document.getElementById('submitText').onclick = () => {
+      const ans = document.getElementById('textAnswer').value.trim().toLowerCase();
+      answer(ans === correct.name.toLowerCase());
+    };
+    document.getElementById('skip').onclick = nextQuestion;
+
+    document.getElementById('modeToggle').onclick = () => {
+      mode = mode === 'mc' ? 'text' : 'mc';
+      document.getElementById('modeToggle').textContent =
+        mode === 'mc' ? 'Zum Freitext-Modus wechseln' : 'Zum Multiple-Choice-Modus wechseln';
+      nextQuestion();
+    };
+  </script>
 </body>
 </html>
