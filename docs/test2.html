@@ -55,6 +55,7 @@
 
     .reset-btn { background-color: #444; color: white; }
     .payout-btn { background-color: #0a0; color: white; }
+    .restart-btn { background-color: #007bff; color: white; display: none; }
 
     input[type="number"] {
       padding: 5px;
@@ -75,8 +76,9 @@
   <div id="game-over">💥 GAME OVER</div>
   <div id="game-won">🎉 GESCHAFFT!</div>
   <div class="buttons">
-    <button class="reset-btn" onclick="resetGame()">🔁 Spiel starten</button>
+    <button class="restart-btn" id="restartBtn" onclick="resetGame()">🔁 Neu starten</button>
     <button class="payout-btn" onclick="payout()">🏦 Auszahlung</button>
+    <button class="reset-btn" onclick="resetKonto()">💵 Konto zurücksetzen</button>
   </div>
 
   <script>
@@ -96,12 +98,10 @@
     let balance = 0;
     let einsatz = 50;
 
+    const restartBtn = document.getElementById("restartBtn");
+
     function initChicken() {
-      chicken = {
-        x: 0,
-        y: 1,
-        color: 'yellow'
-      };
+      chicken = { x: 0, y: 1, color: 'yellow' };
     }
 
     function drawTile(x, y, color) {
@@ -111,11 +111,9 @@
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let car of cars) {
         drawTile(car.x, Math.floor(car.y), 'red');
       }
-
       drawTile(chicken.x, chicken.y, chicken.color);
     }
 
@@ -131,6 +129,7 @@
           gameOver = true;
           gameStarted = false;
           document.getElementById("game-over").style.display = "block";
+          restartBtn.style.display = "inline-block";
         }
       }
     }
@@ -203,6 +202,7 @@
       document.getElementById("score").textContent = `💰 Gewinn: 0`;
       document.getElementById("game-over").style.display = "none";
       document.getElementById("game-won").style.display = "none";
+      restartBtn.style.display = "none";
       draw();
     }
 
@@ -227,6 +227,12 @@
       requestAnimationFrame(gameLoop);
     }
 
+    function resetKonto() {
+      balance = 100;
+      saveBalance();
+      alert("💵 Konto wurde auf 100 gesetzt.");
+    }
+
     let lastTime = null;
     function gameLoop(timestamp) {
       if (lastTime === null) lastTime = timestamp;
@@ -242,10 +248,20 @@
       }
     }
 
-    // Start
-    loadBalance();
-    initChicken();
-    draw();
+    // Automatischer Start beim Laden:
+    window.onload = () => {
+      loadBalance();
+      initChicken();
+      einsatz = parseInt(document.getElementById("einsatz").value);
+      if (balance < einsatz) {
+        alert("Nicht genug Guthaben für Spielstart.");
+        return;
+      }
+      balance -= einsatz;
+      saveBalance();
+      gameStarted = true;
+      requestAnimationFrame(gameLoop);
+    };
   </script>
 </body>
 </html>
