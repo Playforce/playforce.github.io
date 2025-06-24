@@ -55,17 +55,27 @@
 
     .reset-btn { background-color: #444; color: white; }
     .payout-btn { background-color: #0a0; color: white; }
+
+    input[type="number"] {
+      padding: 5px;
+      font-size: 16px;
+      width: 80px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h1>🐔 Chicken Crossing – 3-Spurig</h1>
   <div id="account">🧾 Konto: <span id="balance">0</span> 💰</div>
+  <div>
+    Einsatz: <input type="number" id="einsatz" value="50" min="1" step="1"> 💰
+  </div>
   <div id="score">💰 Gewinn: 0</div>
   <canvas id="game" width="1000" height="150"></canvas>
   <div id="game-over">💥 GAME OVER</div>
   <div id="game-won">🎉 GESCHAFFT!</div>
   <div class="buttons">
-    <button class="reset-btn" onclick="resetGame()">🔁 Reset</button>
+    <button class="reset-btn" onclick="resetGame()">🔁 Spiel starten</button>
     <button class="payout-btn" onclick="payout()">🏦 Auszahlung</button>
   </div>
 
@@ -77,14 +87,14 @@
     const COLUMNS = 20;
     const ROWS = 3;
 
-    const START_EINSATZ = 50;
-    let balance = 0;
-
     let chicken = {};
     let cars = [];
-    let score = 1;
+    let score = 0;
     let gameOver = false;
     let gameWon = false;
+    let gameStarted = false;
+    let balance = 0;
+    let einsatz = 50;
 
     function initChicken() {
       chicken = {
@@ -102,12 +112,10 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Autos
       for (let car of cars) {
         drawTile(car.x, Math.floor(car.y), 'red');
       }
 
-      // Huhn
       drawTile(chicken.x, chicken.y, chicken.color);
     }
 
@@ -121,6 +129,7 @@
       for (let car of cars) {
         if (Math.floor(car.x) === chicken.x && Math.floor(car.y) === chicken.y) {
           gameOver = true;
+          gameStarted = false;
           document.getElementById("game-over").style.display = "block";
         }
       }
@@ -138,16 +147,17 @@
     }
 
     function stepForward() {
-      if (gameOver || gameWon) return;
+      if (!gameStarted || gameOver || gameWon) return;
 
       if (chicken.x >= COLUMNS - 1) {
         gameWon = true;
+        gameStarted = false;
         document.getElementById("game-won").style.display = "block";
         return;
       }
 
       chicken.x += 1;
-      score *= 2;
+      score = score === 0 ? einsatz : score * 2;
       document.getElementById("score").textContent = `💰 Gewinn: ${score}`;
       spawnCarInNextColumn();
     }
@@ -158,7 +168,6 @@
       }
     });
 
-    // Konto-Logik
     function loadBalance() {
       balance = parseInt(localStorage.getItem("konto")) || 500;
       updateBalanceDisplay();
@@ -178,42 +187,53 @@
         balance += score;
         saveBalance();
         alert(`✅ Du hast ${score} 💰 gewonnen!`);
-        resetGame();
+        resetGameDisplay();
       } else {
-        alert("❌ Du musst erst gewinnen, um auszahlen zu können!");
+        alert("❌ Gewinne zuerst, um auszuzahlen.");
       }
     }
 
-    function resetGame() {
-      if (balance < START_EINSATZ) {
-        alert("💸 Nicht genug Geld auf dem Konto!");
-        return;
-      }
-
-      balance -= START_EINSATZ;
-      saveBalance();
-
+    function resetGameDisplay() {
       gameOver = false;
       gameWon = false;
-      score = 1;
+      gameStarted = false;
+      score = 0;
       cars = [];
       initChicken();
       document.getElementById("score").textContent = `💰 Gewinn: 0`;
       document.getElementById("game-over").style.display = "none";
       document.getElementById("game-won").style.display = "none";
-      lastTime = null;
       draw();
+    }
+
+    function resetGame() {
+      einsatz = parseInt(document.getElementById("einsatz").value);
+      if (isNaN(einsatz) || einsatz <= 0) {
+        alert("❗ Ungültiger Einsatz.");
+        return;
+      }
+
+      if (balance < einsatz) {
+        alert("💸 Nicht genug Geld auf dem Konto!");
+        return;
+      }
+
+      balance -= einsatz;
+      saveBalance();
+
+      resetGameDisplay();
+      gameStarted = true;
+      lastTime = null;
       requestAnimationFrame(gameLoop);
     }
 
-    // Game loop
     let lastTime = null;
     function gameLoop(timestamp) {
       if (lastTime === null) lastTime = timestamp;
       const delta = timestamp - lastTime;
       lastTime = timestamp;
 
-      if (!gameOver && !gameWon) {
+      if (!gameOver && !gameWon && gameStarted) {
         update(delta);
         draw();
         requestAnimationFrame(gameLoop);
