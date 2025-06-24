@@ -59,7 +59,7 @@
     };
 
     let cars = []; // Autos, die von oben nach unten fallen
-    let score = 0;
+    let score = 1;
     let gameOver = false;
     let gameWon = false;
 
@@ -118,7 +118,7 @@
       }
 
       chicken.x += 1;
-      score += 10;
+      score *= 2;
       document.getElementById("score").textContent = `💰 Geld: ${score}`;
       spawnCarInNextColumn();
     }
