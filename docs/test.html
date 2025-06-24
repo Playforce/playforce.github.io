@@ -1,132 +1,157 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Tic-Tac-Toe für 2 Spieler</title>
+  <meta charset="UTF-8">
+  <title>Chicken Crossing</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      margin: 0;
+      background: #222;
+      color: #fff;
+      font-family: sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem;
+    }
+
+    canvas {
+      background: #444;
+      border: 3px solid #fff;
+      margin-top: 20px;
     }
 
     h1 {
-      margin-bottom: 1rem;
+      margin-top: 20px;
     }
 
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 5px;
+    #score {
+      font-size: 24px;
+      margin: 10px;
     }
 
-    .cell {
-      background: white;
-      border: 2px solid #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .cell.taken {
-      cursor: default;
-    }
-
-    #status {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-    }
-
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
+    #game-over {
+      font-size: 32px;
+      color: red;
+      display: none;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-
-  <h1>Tic-Tac-Toe</h1>
-  <div id="board"></div>
-  <div id="status">Spieler X ist am Zug</div>
-  <button onclick="resetGame()">Neu starten</button>
+  <h1>🐔 Chicken Crossing</h1>
+  <div id="score">💰 Geld: 0</div>
+  <canvas id="gameCanvas" width="400" height="500"></canvas>
+  <div id="game-over">💥 Game Over!</div>
 
   <script>
-    const board = document.getElementById('board');
-    const status = document.getElementById('status');
-    let currentPlayer = 'X';
-    let gameActive = true;
-    const cells = [];
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreDisplay = document.getElementById("score");
+    const gameOverDisplay = document.getElementById("game-over");
 
-    function checkWinner() {
-      const combos = [
-        [0,1,2], [3,4,5], [6,7,8],
-        [0,3,6], [1,4,7], [2,5,8],
-        [0,4,8], [2,4,6],
-      ];
+    const ROWS = 10;
+    const COLS = 8;
+    const TILE_SIZE = 50;
+    const WIDTH = COLS * TILE_SIZE;
+    const HEIGHT = ROWS * TILE_SIZE;
 
-      for (let combo of combos) {
-        const [a, b, c] = combo;
-        if (
-          cells[a].textContent &&
-          cells[a].textContent === cells[b].textContent &&
-          cells[a].textContent === cells[c].textContent
-        ) {
-          gameActive = false;
-          status.textContent = `Spieler ${cells[a].textContent} gewinnt!`;
-          return;
+    const chicken = {
+      x: Math.floor(COLS / 2),
+      y: ROWS - 1,
+      color: "yellow"
+    };
+
+    let cars = [];
+    let score = 0;
+    let gameOver = false;
+
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE - 2, TILE_SIZE - 2);
+    }
+
+    function drawChicken() {
+      drawTile(chicken.x, chicken.y, chicken.color);
+    }
+
+    function spawnCar(row, direction) {
+      const car = {
+        y: row,
+        x: direction === "right" ? -1 : COLS,
+        dir: direction,
+        speed: 0.05 + Math.random() * 0.03,
+        color: "red"
+      };
+      cars.push(car);
+    }
+
+    function updateCars(delta) {
+      for (let car of cars) {
+        if (car.dir === "right") {
+          car.x += car.speed * delta;
+        } else {
+          car.x -= car.speed * delta;
         }
       }
 
-      if ([...cells].every(cell => cell.textContent)) {
-        gameActive = false;
-        status.textContent = "Unentschieden!";
+      cars = cars.filter(car => car.x > -2 && car.x < COLS + 2);
+    }
+
+    function drawCars() {
+      for (let car of cars) {
+        drawTile(Math.floor(car.x), car.y, car.color);
       }
     }
 
-    function handleClick(e) {
-      const cell = e.target;
-      if (!gameActive || cell.textContent) return;
-
-      cell.textContent = currentPlayer;
-      cell.classList.add('taken');
-      checkWinner();
-
-      if (gameActive) {
-        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        status.textContent = `Spieler ${currentPlayer} ist am Zug`;
+    function checkCollision() {
+      for (let car of cars) {
+        if (Math.floor(car.x) === chicken.x && car.y === chicken.y) {
+          gameOver = true;
+          gameOverDisplay.style.display = "block";
+        }
       }
     }
 
-    function createBoard() {
-      board.innerHTML = '';
-      cells.length = 0;
-      for (let i = 0; i < 9; i++) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.addEventListener('click', handleClick);
-        board.appendChild(cell);
-        cells.push(cell);
+    function gameLoop(timestamp) {
+      if (lastTime === null) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+      updateCars(delta);
+      drawCars();
+      drawChicken();
+      checkCollision();
+
+      if (!gameOver) {
+        requestAnimationFrame(gameLoop);
       }
     }
 
-    function resetGame() {
-      currentPlayer = 'X';
-      gameActive = true;
-      status.textContent = "Spieler X ist am Zug";
-      createBoard();
+    function randomizeTraffic() {
+      for (let i = 1; i < ROWS - 1; i++) {
+        if (Math.random() < 0.02) {
+          const dir = Math.random() < 0.5 ? "left" : "right";
+          spawnCar(i, dir);
+        }
+      }
     }
 
-    createBoard();
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && !gameOver) {
+        if (chicken.y > 0) {
+          chicken.y -= 1;
+          score += 10;
+          scoreDisplay.textContent = `💰 Geld: ${score}`;
+        }
+      }
+    });
+
+    let lastTime = null;
+    setInterval(randomizeTraffic, 300);
+
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
-
