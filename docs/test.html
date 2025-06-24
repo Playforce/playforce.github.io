@@ -2,105 +2,155 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Chicken Crossing - Mutprobe</title>
+  <title>Chicken Road - Seitwärts</title>
   <style>
     body {
-      background: #111;
-      color: white;
+      background: #222;
+      color: #fff;
       font-family: sans-serif;
       text-align: center;
     }
-
     canvas {
       background: #333;
-      margin-top: 20px;
       border: 3px solid white;
+      margin-top: 20px;
     }
-
     #score {
       font-size: 24px;
       margin-top: 10px;
     }
-
     #game-over {
       font-size: 32px;
       color: red;
       display: none;
       margin-top: 20px;
     }
+    #game-won {
+      font-size: 32px;
+      color: lime;
+      display: none;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <h1>🐔 Chicken Crossing – Mutprobe</h1>
+  <h1>🐔 Chicken Crossing – Seitwärts</h1>
   <div id="score">💰 Geld: 0</div>
-  <canvas id="game" width="400" height="500"></canvas>
+  <canvas id="game" width="1000" height="100"></canvas>
   <div id="game-over">💥 GAME OVER</div>
+  <div id="game-won">🎉 GESCHAFFT!</div>
 
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
+
     const TILE_SIZE = 50;
-    const ROWS = 10;
-    const COLS = 8;
-    const chicken = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+    const COLUMNS = 20;
+    const ROWS = 1;
+
+    const chicken = {
+      x: 0,
+      y: 0,
+      color: 'yellow'
+    };
+
+    let cars = []; // Autos mit animierter Bewegung
     let score = 0;
     let gameOver = false;
-    let cars = [];
+    let gameWon = false;
 
     function drawTile(x, y, color) {
       ctx.fillStyle = color;
-      ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE - 2, TILE_SIZE - 2);
+      ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
     }
 
-    function drawGame() {
+    function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Zeichne Autos
-      for (const car of cars) {
+      // Autos zeichnen
+      for (let car of cars) {
         drawTile(car.x, car.y, 'red');
       }
 
-      // Zeichne Huhn
-      drawTile(chicken.x, chicken.y, 'yellow');
+      // Huhn zeichnen
+      drawTile(chicken.x, chicken.y, chicken.color);
     }
 
-    function tryStepForward() {
-      if (gameOver) return;
-      if (chicken.y === 0) return; // Oben angekommen
-
-      const nextY = chicken.y - 1;
-      cars = [];
-
-      const autoKommt = Math.random() < 0.5;
-
-      if (autoKommt) {
-        // Auto erscheint zufällig von links oder rechts
-        const direction = Math.random() < 0.5 ? 'left' : 'right';
-        const carX = direction === 'left' ? 0 : COLS - 1;
-        cars.push({ x: carX, y: nextY });
+    function update(deltaTime) {
+      // Autos bewegen
+      for (let car of cars) {
+        car.x += car.speed * deltaTime;
       }
 
-      // Prüfen auf Kollision
-      const trifft = cars.some(car => car.y === nextY && car.x === chicken.x);
-      if (trifft) {
-        gameOver = true;
-        document.getElementById("game-over").style.display = "block";
+      // Entferne Autos, die rechts rausfahren
+      cars = cars.filter(car => car.x < COLUMNS);
+
+      // Kollision prüfen
+      for (let car of cars) {
+        if (Math.floor(car.x) === chicken.x && car.y === chicken.y) {
+          gameOver = true;
+          document.getElementById("game-over").style.display = "block";
+        }
+      }
+    }
+
+    function spawnCarAhead() {
+      const chance = Math.random() < 0.5;
+      if (!chance) return;
+
+      const car = {
+        x: -1, // Start links außerhalb
+        y: 0,
+        speed: 0.01 + Math.random() * 0.02
+      };
+
+      cars.push(car);
+    }
+
+    function stepForward() {
+      if (gameOver || gameWon) return;
+
+      const nextX = chicken.x + 1;
+
+      if (nextX >= COLUMNS) {
+        gameWon = true;
+        document.getElementById("game-won").style.display = "block";
         return;
       }
 
-      chicken.y = nextY;
+      chicken.x = nextX;
       score += 10;
       document.getElementById("score").textContent = `💰 Geld: ${score}`;
-      drawGame();
+
+      spawnCarAhead(); // 50/50 Auto auf dem neuen Feld
+
+      draw();
     }
 
     document.addEventListener("keydown", (e) => {
       if (e.code === "Space") {
-        tryStepForward();
+        stepForward();
       }
     });
 
-    drawGame();
+    // Spiel-Loop
+    let lastTime = null;
+    function gameLoop(timestamp) {
+      if (lastTime === null) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (!gameOver && !gameWon) {
+        update(delta);
+        draw();
+        requestAnimationFrame(gameLoop);
+      } else {
+        draw(); // Letzter Stand zeigen
+      }
+    }
+
+    draw();
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>
