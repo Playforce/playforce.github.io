@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Chicken Road - Seitwärts</title>
+  <title>Chicken Crossing 3-Spurig</title>
   <style>
     body {
       background: #222;
@@ -10,21 +10,25 @@
       font-family: sans-serif;
       text-align: center;
     }
+
     canvas {
       background: #333;
       border: 3px solid white;
       margin-top: 20px;
     }
+
     #score {
       font-size: 24px;
       margin-top: 10px;
     }
+
     #game-over {
       font-size: 32px;
       color: red;
       display: none;
       margin-top: 20px;
     }
+
     #game-won {
       font-size: 32px;
       color: lime;
@@ -34,9 +38,9 @@
   </style>
 </head>
 <body>
-  <h1>🐔 Chicken Crossing – Seitwärts</h1>
+  <h1>🐔 Chicken Crossing – 3-Spurig</h1>
   <div id="score">💰 Geld: 0</div>
-  <canvas id="game" width="1000" height="100"></canvas>
+  <canvas id="game" width="1000" height="150"></canvas>
   <div id="game-over">💥 GAME OVER</div>
   <div id="game-won">🎉 GESCHAFFT!</div>
 
@@ -46,15 +50,15 @@
 
     const TILE_SIZE = 50;
     const COLUMNS = 20;
-    const ROWS = 1;
+    const ROWS = 3;
 
     const chicken = {
       x: 0,
-      y: 0,
+      y: 1, // mittlere Spur
       color: 'yellow'
     };
 
-    let cars = []; // Autos mit animierter Bewegung
+    let cars = []; // Autos, die von oben nach unten fallen
     let score = 0;
     let gameOver = false;
     let gameWon = false;
@@ -67,64 +71,56 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Autos zeichnen
+      // Autos
       for (let car of cars) {
-        drawTile(car.x, car.y, 'red');
+        drawTile(car.x, Math.floor(car.y), 'red');
       }
 
-      // Huhn zeichnen
+      // Huhn
       drawTile(chicken.x, chicken.y, chicken.color);
     }
 
     function update(deltaTime) {
-      // Autos bewegen
       for (let car of cars) {
-        car.x += car.speed * deltaTime;
+        car.y += car.speed * deltaTime;
       }
 
-      // Entferne Autos, die rechts rausfahren
-      cars = cars.filter(car => car.x < COLUMNS);
+      // Entferne Autos, die unten raus sind
+      cars = cars.filter(car => car.y < ROWS);
 
       // Kollision prüfen
       for (let car of cars) {
-        if (Math.floor(car.x) === chicken.x && car.y === chicken.y) {
+        if (Math.floor(car.x) === chicken.x && Math.floor(car.y) === chicken.y) {
           gameOver = true;
           document.getElementById("game-over").style.display = "block";
         }
       }
     }
 
-    function spawnCarAhead() {
-      const chance = Math.random() < 0.5;
-      if (!chance) return;
-
-      const car = {
-        x: -1, // Start links außerhalb
-        y: 0,
-        speed: 0.01 + Math.random() * 0.02
-      };
-
-      cars.push(car);
+    function spawnCarInNextColumn() {
+      if (Math.random() < 0.5) {
+        const lane = Math.floor(Math.random() * ROWS); // zufällige Spur 0–2
+        cars.push({
+          x: chicken.x + 1,
+          y: -1,
+          speed: 0.01 + Math.random() * 0.02
+        });
+      }
     }
 
     function stepForward() {
       if (gameOver || gameWon) return;
 
-      const nextX = chicken.x + 1;
-
-      if (nextX >= COLUMNS) {
+      if (chicken.x >= COLUMNS - 1) {
         gameWon = true;
         document.getElementById("game-won").style.display = "block";
         return;
       }
 
-      chicken.x = nextX;
+      chicken.x += 1;
       score += 10;
       document.getElementById("score").textContent = `💰 Geld: ${score}`;
-
-      spawnCarAhead(); // 50/50 Auto auf dem neuen Feld
-
-      draw();
+      spawnCarInNextColumn();
     }
 
     document.addEventListener("keydown", (e) => {
@@ -133,7 +129,7 @@
       }
     });
 
-    // Spiel-Loop
+    // Game loop
     let lastTime = null;
     function gameLoop(timestamp) {
       if (lastTime === null) lastTime = timestamp;
@@ -145,7 +141,7 @@
         draw();
         requestAnimationFrame(gameLoop);
       } else {
-        draw(); // Letzter Stand zeigen
+        draw(); // Letzter Stand anzeigen
       }
     }
 
