@@ -55,7 +55,6 @@
 
     .reset-btn { background-color: #444; color: white; }
     .payout-btn { background-color: #0a0; color: white; }
-    .restart-btn { background-color: #007bff; color: white; display: none; }
 
     input[type="number"] {
       padding: 5px;
@@ -76,7 +75,7 @@
   <div id="game-over">💥 GAME OVER</div>
   <div id="game-won">🎉 GESCHAFFT!</div>
   <div class="buttons">
-    <button class="restart-btn" id="restartBtn" onclick="resetGame()">🔁 Neu starten</button>
+    <button class="reset-btn" onclick="resetGame()">▶️ Start</button>
     <button class="payout-btn" onclick="payout()">🏦 Auszahlung</button>
     <button class="reset-btn" onclick="resetKonto()">💵 Konto zurücksetzen</button>
   </div>
@@ -97,8 +96,7 @@
     let gameStarted = false;
     let balance = 0;
     let einsatz = 50;
-
-    const restartBtn = document.getElementById("restartBtn");
+    let einsatzAbgebucht = false;
 
     function initChicken() {
       chicken = { x: 0, y: 1, color: 'yellow' };
@@ -129,14 +127,12 @@
           gameOver = true;
           gameStarted = false;
           document.getElementById("game-over").style.display = "block";
-          restartBtn.style.display = "inline-block";
         }
       }
     }
 
     function spawnCarInNextColumn() {
       if (Math.random() < 0.65) {
-        const lane = Math.floor(Math.random() * ROWS);
         cars.push({
           x: chicken.x,
           y: -1,
@@ -147,6 +143,17 @@
 
     function stepForward() {
       if (!gameStarted || gameOver || gameWon) return;
+
+      if (!einsatzAbgebucht) {
+        if (balance < einsatz) {
+          alert("❌ Nicht genug Guthaben für diesen Einsatz!");
+          gameStarted = false;
+          return;
+        }
+        balance -= einsatz;
+        einsatzAbgebucht = true;
+        saveBalance();
+      }
 
       if (chicken.x >= COLUMNS - 1) {
         gameWon = true;
@@ -162,9 +169,7 @@
     }
 
     document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") {
-        stepForward();
-      }
+      if (e.code === "Space") stepForward();
     });
 
     function loadBalance() {
@@ -182,13 +187,19 @@
     }
 
     function payout() {
-      if (gameWon) {
+      if (gameOver) {
+        alert("❌ Bei Tod ist keine Auszahlung möglich.");
+        return;
+      }
+
+      if (score > 0) {
         balance += score;
+        alert(`✅ ${score} 💰 wurden ausgezahlt!`);
+        score = 0;
+        document.getElementById("score").textContent = "💰 Gewinn: 0";
         saveBalance();
-        alert(`✅ Du hast ${score} 💰 gewonnen!`);
-        resetGameDisplay();
       } else {
-        alert("❌ Gewinne zuerst, um auszuzahlen.");
+        alert("❌ Kein Gewinn zum Auszahlen.");
       }
     }
 
@@ -196,13 +207,11 @@
       gameOver = false;
       gameWon = false;
       gameStarted = false;
-      score = 0;
+      einsatzAbgebucht = false;
       cars = [];
       initChicken();
-      document.getElementById("score").textContent = `💰 Gewinn: 0`;
       document.getElementById("game-over").style.display = "none";
       document.getElementById("game-won").style.display = "none";
-      restartBtn.style.display = "none";
       draw();
     }
 
@@ -218,11 +227,10 @@
         return;
       }
 
-      balance -= einsatz;
-      saveBalance();
-
       resetGameDisplay();
       gameStarted = true;
+      score = 0;
+      document.getElementById("score").textContent = "💰 Gewinn: 0";
       lastTime = null;
       requestAnimationFrame(gameLoop);
     }
@@ -248,19 +256,11 @@
       }
     }
 
-    // Automatischer Start beim Laden:
+    // Initialisieren
     window.onload = () => {
       loadBalance();
       initChicken();
-      einsatz = parseInt(document.getElementById("einsatz").value);
-      if (balance < einsatz) {
-        alert("Nicht genug Guthaben für Spielstart.");
-        return;
-      }
-      balance -= einsatz;
-      saveBalance();
-      gameStarted = true;
-      requestAnimationFrame(gameLoop);
+      draw();
     };
   </script>
 </body>
