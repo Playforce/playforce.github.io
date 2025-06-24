@@ -95,7 +95,7 @@
     let gameWon = false;
     let gameStarted = false;
     let balance = 0;
-    let einsatz = 50;
+    let einsatz = 10;
     let einsatzAbgebucht = false;
 
     function initChicken() {
@@ -173,7 +173,7 @@
     });
 
     function loadBalance() {
-      balance = parseInt(localStorage.getItem("konto")) || 100;
+      balance = parseInt(localStorage.getItem("konto")) || 250;
       updateBalanceDisplay();
     }
 
