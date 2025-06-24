@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Chicken Crossing 3-Spurig</title>
+  <style>
+    body {
+      background: #222;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+    }
+
+    canvas {
+      background: #333;
+      border: 3px solid white;
+      margin-top: 20px;
+    }
+
+    #score, #account {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    #game-over {
+      font-size: 32px;
+      color: red;
+      display: none;
+      margin-top: 20px;
+    }
+
+    #game-won {
+      font-size: 32px;
+      color: lime;
+      display: none;
+      margin-top: 20px;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    .reset-btn { background-color: #444; color: white; }
+    .payout-btn { background-color: #0a0; color: white; }
+  </style>
+</head>
+<body>
+  <h1>🐔 Chicken Crossing – 3-Spurig</h1>
+  <div id="account">🧾 Konto: <span id="balance">0</span> 💰</div>
+  <div id="score">💰 Gewinn: 0</div>
+  <canvas id="game" width="1000" height="150"></canvas>
+  <div id="game-over">💥 GAME OVER</div>
+  <div id="game-won">🎉 GESCHAFFT!</div>
+  <div class="buttons">
+    <button class="reset-btn" onclick="resetGame()">🔁 Reset</button>
+    <button class="payout-btn" onclick="payout()">🏦 Auszahlung</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const TILE_SIZE = 50;
+    const COLUMNS = 20;
+    const ROWS = 3;
+
+    const START_EINSATZ = 50;
+    let balance = 0;
+
+    let chicken = {};
+    let cars = [];
+    let score = 1;
+    let gameOver = false;
+    let gameWon = false;
+
+    function initChicken() {
+      chicken = {
+        x: 0,
+        y: 1,
+        color: 'yellow'
+      };
+    }
+
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * TILE_SIZE + 2, y * TILE_SIZE + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Autos
+      for (let car of cars) {
+        drawTile(car.x, Math.floor(car.y), 'red');
+      }
+
+      // Huhn
+      drawTile(chicken.x, chicken.y, chicken.color);
+    }
+
+    function update(deltaTime) {
+      for (let car of cars) {
+        car.y += car.speed * deltaTime;
+      }
+
+      cars = cars.filter(car => car.y < ROWS);
+
+      for (let car of cars) {
+        if (Math.floor(car.x) === chicken.x && Math.floor(car.y) === chicken.y) {
+          gameOver = true;
+          document.getElementById("game-over").style.display = "block";
+        }
+      }
+    }
+
+    function spawnCarInNextColumn() {
+      if (Math.random() < 0.5) {
+        const lane = Math.floor(Math.random() * ROWS);
+        cars.push({
+          x: chicken.x + 1,
+          y: -1,
+          speed: 0.01 + Math.random() * 0.02
+        });
+      }
+    }
+
+    function stepForward() {
+      if (gameOver || gameWon) return;
+
+      if (chicken.x >= COLUMNS - 1) {
+        gameWon = true;
+        document.getElementById("game-won").style.display = "block";
+        return;
+      }
+
+      chicken.x += 1;
+      score *= 2;
+      document.getElementById("score").textContent = `💰 Gewinn: ${score}`;
+      spawnCarInNextColumn();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") {
+        stepForward();
+      }
+    });
+
+    // Konto-Logik
+    function loadBalance() {
+      balance = parseInt(localStorage.getItem("konto")) || 500;
+      updateBalanceDisplay();
+    }
+
+    function saveBalance() {
+      localStorage.setItem("konto", balance);
+      updateBalanceDisplay();
+    }
+
+    function updateBalanceDisplay() {
+      document.getElementById("balance").textContent = balance;
+    }
+
+    function payout() {
+      if (gameWon) {
+        balance += score;
+        saveBalance();
+        alert(`✅ Du hast ${score} 💰 gewonnen!`);
+        resetGame();
+      } else {
+        alert("❌ Du musst erst gewinnen, um auszahlen zu können!");
+      }
+    }
+
+    function resetGame() {
+      if (balance < START_EINSATZ) {
+        alert("💸 Nicht genug Geld auf dem Konto!");
+        return;
+      }
+
+      balance -= START_EINSATZ;
+      saveBalance();
+
+      gameOver = false;
+      gameWon = false;
+      score = 1;
+      cars = [];
+      initChicken();
+      document.getElementById("score").textContent = `💰 Gewinn: 0`;
+      document.getElementById("game-over").style.display = "none";
+      document.getElementById("game-won").style.display = "none";
+      lastTime = null;
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Game loop
+    let lastTime = null;
+    function gameLoop(timestamp) {
+      if (lastTime === null) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+
+      if (!gameOver && !gameWon) {
+        update(delta);
+        draw();
+        requestAnimationFrame(gameLoop);
+      } else {
+        draw();
+      }
+    }
+
+    // Start
+    loadBalance();
+    initChicken();
+    draw();
+  </script>
+</body>
+</html>
