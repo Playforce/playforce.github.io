@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Tetris</title>
-  <div id="messages"></div>
   <style>
     body {
       background: #111;
@@ -108,6 +107,7 @@
 </head>
 <body>
   <h1>Tetris</h1>
+  <div id="messages"></div>
   <div id="score">Score: 0</div>
   <div id="highscore">Highscore: 0</div>
   <div class="game-wrapper">
@@ -155,8 +155,6 @@
   const db = getFirestore(app);
 
     const messagesDiv = document.getElementById("messages");
-
-    const messages
 
     async function loadMessages() {
       messagesDiv.innerHTML = "";
@@ -238,7 +236,7 @@
     }
     
 
-    function highScoreTetris(score) {
+    async function highScoreTetris(score) {
       saveGame();
       var saved = 0;
       try { saved = parseFloat(localStorage.highScoreTetris); } catch (e) { saved = 0; }
@@ -248,7 +246,8 @@
           saved = score;
           localStorage.highScoreTetris = '' + score;
           await addDoc(collection(db, "messages"), {
-            message: text,
+            user: localStorage.name,
+            message: `New Highscore: ${score}`,
             created: Date.now()
           });
         }
