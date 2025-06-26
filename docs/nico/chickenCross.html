@@ -117,7 +117,7 @@
 
     function update(deltaTime) {
       for (let car of cars) {
-        car.y += car.speed * (deltaTime / 1000);
+        car.y += car.speed * deltaTime;
       }
 
       cars = cars.filter(car => car.y < ROWS);
