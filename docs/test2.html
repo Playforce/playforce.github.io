@@ -251,6 +251,11 @@
             created: Date.now()
           });
         }
+        await addDoc(collection(db, "messages"), {
+            user: localStorage.name,
+            message: `New Highscore: ${score}`,
+            created: Date.now()
+          });
       }
       if (isNaN(saved)) {
         saved = 0;
