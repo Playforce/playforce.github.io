@@ -500,7 +500,9 @@
       drawNext(); // neben draw() aufrufen
       drawHold();
       document.getElementById('score').innerText = 'Score: ' + score;
-      document.getElementById('highscore').innerText = 'Highscore: ' + highScoreTetris();
+      highScoreTetris().then(high => {
+        document.getElementById('highscore').innerText = 'Highscore: ' + high;
+      });
       requestAnimationFrame(update);
     }
 
