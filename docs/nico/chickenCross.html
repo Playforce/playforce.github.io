@@ -139,9 +139,21 @@
           y: -1,
           speed: 0.01 + Math.random() * 0.02
         });
-        gameOver = true;
-        gameStarted = false;
-        document.getElementById("game-over").style.display = "block";
+        cars.push({
+          x: chicken.x + 1,
+          y: -1,
+          speed: 0.01 + Math.random() * 0.02
+        });
+        cars.push({
+          x: chicken.x + 2,
+          y: -1,
+          speed: 0.01 + Math.random() * 0.02
+        });
+        cars.push({
+          x: chicken.x + 3,
+          y: -1,
+          speed: 0.01 + Math.random() * 0.02
+        });
       }
     }
 
