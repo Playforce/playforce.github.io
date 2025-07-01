@@ -12,39 +12,29 @@
       font-family: sans-serif;
       text-align: center;
     }
-
-    h1 {
-      margin-top: 20px;
-    }
-
     #game {
       display: grid;
-      grid-template-columns: repeat(20, 30px);
-      grid-template-rows: repeat(20, 30px);
+      grid-template-columns: repeat(20, 25px);
+      grid-template-rows: repeat(20, 25px);
+      gap: 1px;
       margin: 20px auto;
       width: max-content;
-      border: 2px solid #555;
     }
-
     .cell {
-      width: 30px;
-      height: 30px;
-      box-sizing: border-box;
+      width: 25px;
+      height: 25px;
     }
-
     .wall {
       background-color: #333;
     }
-
     .dot {
       background-color: #111;
       position: relative;
     }
-
     .dot::after {
       content: '';
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       background: yellow;
       border-radius: 50%;
       position: absolute;
@@ -52,12 +42,10 @@
       left: 50%;
       transform: translate(-50%, -50%);
     }
-
     .pacman {
       background-color: yellow;
       border-radius: 50%;
     }
-
     .ghost {
       background-color: red;
       border-radius: 50%;
@@ -67,20 +55,42 @@
 <body>
   <h1>Pac-Man Dark</h1>
   <div id="game"></div>
-
   <script>
-    const game = document.getElementById('game');
     const width = 20;
-    const layout = new Array(400).fill(0);
-    const walls = [
-      ...Array(20).keys(),
-      ...Array(20).keys().map(i => 380 + i),
-      ...Array(20).keys().map(i => i * 20),
-      ...Array(20).keys().map(i => i * 20 + 19)
-    ];
-    walls.forEach(i => layout[i] = 1);
-
+    const height = 20;
+    const game = document.getElementById('game');
     const cells = [];
+    const layout = [
+      // 0: dot, 1: wall
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
+      1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,0,1,
+      1,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,
+      1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,
+      1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,0,1,
+      1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,
+      1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,0,1,
+      1,0,0,0,1,0,0,0,0,2,2,0,0,0,1,0,0,0,0,1,
+      1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,
+      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
+      1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,0,1,
+      1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,
+      1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1,
+      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    ];
+
+    const player = { index: 189, direction: 1 };
+    const ghosts = [
+      { index: 209, direction: -1 },
+      { index: 210, direction: 1 },
+      { index: 230, direction: -width },
+    ];
+
     function createBoard() {
       for (let i = 0; i < layout.length; i++) {
         const cell = document.createElement('div');
@@ -95,65 +105,71 @@
       }
     }
 
-    let pacmanIndex = 210;
-    cells[pacmanIndex]?.classList.add('pacman');
-
-    let ghostIndex = 190;
-    cells[ghostIndex]?.classList.add('ghost');
-
-    function movePacman(e) {
-      cells[pacmanIndex].classList.remove('pacman');
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          if (pacmanIndex % width !== 0 && layout[pacmanIndex - 1] !== 1) pacmanIndex -= 1;
-          break;
-        case 'ArrowRight':
-          if (pacmanIndex % width < width - 1 && layout[pacmanIndex + 1] !== 1) pacmanIndex += 1;
-          break;
-        case 'ArrowUp':
-          if (pacmanIndex - width >= 0 && layout[pacmanIndex - width] !== 1) pacmanIndex -= width;
-          break;
-        case 'ArrowDown':
-          if (pacmanIndex + width < layout.length && layout[pacmanIndex + width] !== 1) pacmanIndex += width;
-          break;
-      }
-
-      if (cells[pacmanIndex].classList.contains('dot')) {
-        cells[pacmanIndex].classList.remove('dot');
-      }
-
-      if (pacmanIndex === ghostIndex) {
-        alert('Game Over!');
-        document.removeEventListener('keydown', movePacman);
-        clearInterval(ghostTimer);
-      }
-
-      cells[pacmanIndex].classList.add('pacman');
-    }
-
-    document.addEventListener('keydown', movePacman);
-
-    function moveGhost() {
-      const directions = [-1, 1, -width, width];
-      const possible = directions.filter(dir => {
-        const next = ghostIndex + dir;
-        return layout[next] !== 1 && !cells[next].classList.contains('ghost');
+    function drawEntities() {
+      cells.forEach(cell => {
+        cell.classList.remove('pacman', 'ghost');
       });
-      if (possible.length === 0) return;
-      cells[ghostIndex].classList.remove('ghost');
-      ghostIndex += possible[Math.floor(Math.random() * possible.length)];
-      if (ghostIndex === pacmanIndex) {
-        alert('Game Over!');
-        document.removeEventListener('keydown', movePacman);
-        clearInterval(ghostTimer);
-      }
-      cells[ghostIndex].classList.add('ghost');
+      cells[player.index].classList.add('pacman');
+      ghosts.forEach(g => cells[g.index].classList.add('ghost'));
     }
 
-    const ghostTimer = setInterval(moveGhost, 500);
+    function movePlayer() {
+      const next = player.index + player.direction;
+      if (layout[next] !== 1) {
+        player.index = next;
+        if (cells[player.index].classList.contains('dot')) {
+          cells[player.index].classList.remove('dot');
+        }
+      }
+    }
 
+    function handleKey(e) {
+      switch (e.key) {
+        case 'ArrowLeft': player.direction = -1; break;
+        case 'ArrowRight': player.direction = 1; break;
+        case 'ArrowUp': player.direction = -width; break;
+        case 'ArrowDown': player.direction = width; break;
+      }
+    }
+
+    function moveGhosts() {
+      for (const ghost of ghosts) {
+        const directions = [-1, 1, -width, width];
+        let minDist = Infinity;
+        let best = ghost.direction;
+        for (let dir of directions) {
+          const next = ghost.index + dir;
+          if (layout[next] === 1) continue;
+          const dist = Math.abs((next % width) - (player.index % width)) + Math.abs(Math.floor(next / width) - Math.floor(player.index / width));
+          if (dist < minDist) {
+            minDist = dist;
+            best = dir;
+          }
+        }
+        ghost.index += best;
+      }
+    }
+
+    function checkCollision() {
+      for (const ghost of ghosts) {
+        if (ghost.index === player.index) {
+          alert("Game Over!");
+          clearInterval(gameLoop);
+        }
+      }
+    }
+
+    function step() {
+      movePlayer();
+      moveGhosts();
+      drawEntities();
+      checkCollision();
+    }
+
+    document.addEventListener('keydown', handleKey);
     createBoard();
+    drawEntities();
+    const gameLoop = setInterval(step, 200);
   </script>
 </body>
 </html>
