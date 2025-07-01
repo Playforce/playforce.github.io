@@ -7,40 +7,46 @@
   <style>
     body {
       margin: 0;
-      background-color: #111;
+      background-color: #000;
       color: white;
       font-family: sans-serif;
       text-align: center;
     }
     #game {
       display: grid;
-      grid-template-columns: repeat(20, 25px);
-      grid-template-rows: repeat(20, 25px);
+      grid-template-columns: repeat(28, 18px);
+      grid-template-rows: repeat(31, 18px);
       gap: 1px;
-      margin: 20px auto;
+      margin: 10px auto;
       width: max-content;
     }
     .cell {
-      width: 25px;
-      height: 25px;
+      width: 18px;
+      height: 18px;
     }
     .wall {
-      background-color: #333;
+      background-color: #00f;
     }
     .dot {
-      background-color: #111;
+      background-color: #000;
       position: relative;
     }
     .dot::after {
       content: '';
-      width: 5px;
-      height: 5px;
-      background: yellow;
+      width: 3px;
+      height: 3px;
+      background: white;
       border-radius: 50%;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+    }
+    .empty {
+      background-color: #000;
+    }
+    .ghost-house {
+      background-color: #111;
     }
     .pacman {
       background-color: yellow;
@@ -56,39 +62,42 @@
   <h1>Pac-Man Dark</h1>
   <div id="game"></div>
   <script>
-    const width = 20;
-    const height = 20;
+    const width = 28;
+    const height = 31;
     const game = document.getElementById('game');
     const cells = [];
+
     const layout = [
-      // 0: dot, 1: wall
-      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
-      1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,0,1,
-      1,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,
-      1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,
-      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,
-      1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,0,1,
-      1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,1,
-      1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,0,1,
-      1,0,0,0,1,0,0,0,0,2,2,0,0,0,1,0,0,0,0,1,
-      1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,
-      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
-      1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1,0,1,
-      1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1,0,1,
-      1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,
-      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-      1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1,
-      1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,
-      1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,
-      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+      // Legende: 0 = Punkt, 1 = Wand, 2 = leer, 4 = Ghost-Haus
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,0,1,
+      1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,1,0,0,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,
+      1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,
+      1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,0,1,1,1,1,1,2,2,2,1,1,1,1,1,0,1,1,1,1,1,0,1,
+      1,0,0,0,0,0,0,0,0,0,0,1,2,4,4,2,1,0,0,0,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,0,1,1,1,0,1,2,4,4,2,1,0,1,1,1,0,1,1,1,1,1,1,
+      2,2,2,2,2,1,0,1,1,1,0,1,2,2,2,2,1,0,1,1,1,0,1,2,2,2,2,2,
+      1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1,
+      1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,
+      1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+      // + weitere 10 Reihen um das Raster zu füllen (falls gewünscht)
     ];
 
-    const player = { index: 161, direction: 1 };
+    const player = { index: 377, direction: 1 };
     const ghosts = [
-      { index: 209, direction: -1 },
-      { index: 210, direction: 1 },
-      { index: 230, direction: -width },
+      { index: 373, direction: -1 },
+      { index: 374, direction: 1 },
+      { index: 401, direction: -width },
     ];
 
     function createBoard() {
@@ -97,8 +106,12 @@
         cell.classList.add('cell');
         if (layout[i] === 1) {
           cell.classList.add('wall');
-        } else {
+        } else if (layout[i] === 0) {
           cell.classList.add('dot');
+        } else if (layout[i] === 4) {
+          cell.classList.add('ghost-house');
+        } else {
+          cell.classList.add('empty');
         }
         game.appendChild(cell);
         cells.push(cell);
@@ -115,7 +128,7 @@
 
     function movePlayer() {
       const next = player.index + player.direction;
-      if (layout[next] !== 1) {
+      if (layout[next] !== 1 && layout[next] !== 4) {
         player.index = next;
         if (cells[player.index].classList.contains('dot')) {
           cells[player.index].classList.remove('dot');
@@ -139,7 +152,7 @@
         let best = ghost.direction;
         for (let dir of directions) {
           const next = ghost.index + dir;
-          if (layout[next] === 1) continue;
+          if (layout[next] === 1 || layout[next] === 4) continue;
           const dist = Math.abs((next % width) - (player.index % width)) + Math.abs(Math.floor(next / width) - Math.floor(player.index / width));
           if (dist < minDist) {
             minDist = dist;
@@ -169,7 +182,7 @@
     document.addEventListener('keydown', handleKey);
     createBoard();
     drawEntities();
-    const gameLoop = setInterval(step, 200);
+    const gameLoop = setInterval(step, 180);
   </script>
 </body>
 </html>
