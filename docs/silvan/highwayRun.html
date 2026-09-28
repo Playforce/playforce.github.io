@@ -1,280 +1,882 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Highway Run 2player</title>
-  <style>
-    html, body { margin:0; padding:0; overflow:hidden; background:#222; color:#fff; font-family: sans-serif; }
-    canvas { display:block; }
-    .info { position:absolute; z-index:10; font-size:18px; }
-    #score1 { left:10px; top:10px; }
-    #lives1 { left:10px; bottom:10px; }
-    #controls1 { left:10px; top:40px; }
-    #score2 { right:10px; top:10px; }
-    #lives2 { right:10px; bottom:10px; }
-    #controls2 { right:10px; top:40px; text-align:right; }
-    #startScreen, #endScreen { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:20; }
-    #startScreen select, #startScreen button, #endScreen button { font-size:18px; padding:8px 16px; margin:8px; }
-    .touch-btn { display:inline-block; width:50px; height:50px; margin:4px; background:rgba(255,255,255,0.1); border:2px solid #fff; border-radius:8px; text-align:center; line-height:46px; font-size:24px; user-select:none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tetris2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cabinet:#07090a; --screen:#081810; --panel:#0c1712; --border:#1e3a2a;
+    --text:#daffe9; --muted:#6f9c81; --phosphor:#59ffa0; --phosphor-dim:#2b7a50;
+    --amber:#ffb454; --danger:#ff6b6b;
+    --font-display:'Press Start 2P', ui-monospace, monospace;
+    --font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:radial-gradient(ellipse at 50% -10%, #0f2318 0%, transparent 60%), var(--cabinet);
+    color:var(--text); font-family:var(--font-mono);
+    display:flex; align-items:center; justify-content:center; min-height:100%;
+  }
+  .page{display:flex; flex-direction:column; align-items:center; gap:16px; padding:24px;}
+
+  /* Toolbar */
+  .topbar{display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center;}
+  .mode-btn{
+    background:#0f1d16; color:var(--muted); border:1px solid var(--border); border-radius:6px;
+    padding:8px 14px; font-family:var(--font-mono); font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .mode-btn.active{background:rgba(89,255,160,.15); border-color:var(--phosphor); color:var(--phosphor); box-shadow:0 0 10px rgba(89,255,160,.25);}
+  .mode-btn.small{padding:8px 10px;}
+  .randomizer-control{display:flex; align-items:center; gap:8px; background:#0f1d16; border:1px solid var(--border); border-radius:6px; padding:6px 10px;}
+  .randomizer-control label{font-size:12px; color:var(--muted);}
+  .randomizer-control select{
+    background:var(--screen); color:var(--text); border:1px solid var(--border); border-radius:4px;
+    padding:5px 6px; font-family:var(--font-mono); font-size:12px;
+  }
+
+  .wrap{display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start; justify-content:center;}
+  #players{display:flex; gap:18px; flex-wrap:wrap; justify-content:center;}
+
+  .player-block{display:flex; flex-direction:column; gap:8px; align-items:center;}
+  .player-header{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
+    font-size:11px; color:var(--muted); width:100%;
+  }
+  .p-label{font-family:var(--font-display); font-size:9px; color:var(--phosphor-dim);}
+  .p-stats b{color:var(--phosphor); text-shadow:0 0 6px rgba(89,255,160,.5);}
+  .combo-badge{
+    font-family:var(--font-display); font-size:9px; color:var(--amber); text-shadow:0 0 8px rgba(255,180,84,.6);
+    background:rgba(255,180,84,.1); border:1px solid var(--amber); border-radius:4px; padding:3px 6px;
+  }
+  .combo-badge[hidden]{display:none;}
+
+  .board-panel{
+    background:linear-gradient(180deg, #10221a, #0a1712);
+    border:1px solid var(--border); border-radius:10px; padding:14px;
+    box-shadow:0 0 0 1px #000, 0 0 40px rgba(89,255,160,.06), inset 0 1px 0 rgba(255,255,255,.03);
+    position:relative;
+  }
+  canvas{display:block; background:var(--screen); border-radius:3px;}
+  .board-wrap{position:relative;}
+  .board-wrap::after{
+    content:""; position:absolute; inset:0; pointer-events:none; border-radius:3px;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0px, rgba(0,0,0,.18) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay;
+  }
+
+  .mini-row{display:flex; gap:8px;}
+  .mini-box{
+    background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:6px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .mini-box span{font-family:var(--font-display); font-size:8px; color:var(--phosphor-dim);}
+
+  .side{display:flex; flex-direction:column; gap:12px; width:196px;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:6px; padding:12px 14px;}
+  .card h3{margin:0 0 10px; font-family:var(--font-display); font-size:9px; letter-spacing:.04em; color:var(--phosphor-dim); font-weight:400;}
+  .keys{font-size:12px; line-height:2; color:var(--muted);}
+  .keys b{color:var(--screen); background:var(--phosphor); padding:1px 6px; border-radius:3px; font-family:var(--font-mono); font-weight:700;}
+  .keys .p2 b{background:var(--amber);}
+
+  .overlay-el{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; background:rgba(4,8,6,.9); border-radius:3px; text-align:center; padding:12px;
+  }
+  .overlay-el h2{margin:0; font-family:var(--font-display); font-size:14px; color:var(--phosphor); text-shadow:0 0 10px rgba(89,255,160,.6);}
+  .overlay-el p{margin:0; color:var(--muted); font-size:12px;}
+  button{background:var(--phosphor); color:#04170d; border:none; border-radius:4px; padding:8px 16px; font-weight:700; cursor:pointer; font-size:12px; font-family:var(--font-mono);}
+  button:hover{filter:brightness(1.12);}
+
+  .toast{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%) scale(0.8); transform-origin:top center;
+    background:#081a12; border:2px solid var(--phosphor); color:var(--phosphor); font-size:14px; font-weight:800;
+    padding:9px 20px; border-radius:6px; opacity:0; pointer-events:none; z-index:6;
+    transition:opacity .18s ease-out, transform .18s ease-out;
+    white-space:nowrap; text-shadow:0 0 8px rgba(89,255,160,.8);
+    box-shadow:0 0 4px rgba(89,255,160,.6), 0 0 26px rgba(89,255,160,.4), 0 4px 14px rgba(0,0,0,.5);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) scale(1); animation:toastPulse .5s ease-out; }
+  @keyframes toastPulse{
+    0%{ transform:translateX(-50%) scale(0.8); }
+    55%{ transform:translateX(-50%) scale(1.08); }
+    100%{ transform:translateX(-50%) scale(1); }
+  }
+
+  @keyframes shake{
+    10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
+    30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
+  }
+  canvas.shake{animation:shake .4s;}
+
+  .hs-form{display:flex; gap:6px; margin-top:4px;}
+  .hs-form input{flex:1; background:#0f1d16; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 8px; font-size:12px; font-family:var(--font-mono); width:90px;}
+  .hs-list{list-style:none; margin:0; padding:0; font-size:12px; font-family:var(--font-mono);}
+  .hs-list li{display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed var(--border);}
+  .hs-list li:last-child{border-bottom:none;}
+  .hs-list .rank{color:var(--muted); width:20px; display:inline-block;}
+  .hs-list li.new{color:var(--phosphor); font-weight:700; text-shadow:0 0 6px rgba(89,255,160,.5);}
+  .hs-empty{color:var(--muted); font-size:11px;}
+
+  /* Geheimes Menü */
+  #secretMenu{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(2,5,4,.9); z-index:50; padding:16px;}
+  .menu-box{background:var(--panel); border:1px solid var(--phosphor-dim); border-radius:8px; padding:20px; width:min(520px, 92vw); max-height:86vh; overflow-y:auto; box-shadow:0 0 30px rgba(89,255,160,.1);}
+  .menu-box h2{margin:0 0 4px; font-family:var(--font-display); font-size:14px; color:var(--phosphor);}
+  .menu-box .hint{color:var(--muted); font-size:11px; margin:0 0 16px;}
+  .menu-section{margin-bottom:18px;}
+  .menu-section h3{margin:0 0 8px; font-family:var(--font-display); font-size:9px; letter-spacing:.04em; color:var(--phosphor-dim); font-weight:400;}
+  .shape-toggles{display:flex; flex-wrap:wrap; gap:8px;}
+  .shape-chip{display:flex; align-items:center; gap:6px; background:#0f1d16; border:1px solid var(--border); border-radius:5px; padding:6px 10px; cursor:pointer; font-size:12px; user-select:none;}
+  .shape-chip.off{opacity:.4;}
+  .shape-chip .swatch{width:11px; height:11px; border-radius:2px; display:inline-block;}
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; padding:7px 0; font-size:13px;}
+  .toggle-row .desc{color:var(--muted); font-size:11px; margin-top:2px;}
+  .switch{position:relative; width:38px; height:22px; flex:none;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; inset:0; background:#1a2c22; border-radius:4px; cursor:pointer; transition:.15s; border:1px solid var(--border);}
+  .slider:before{content:""; position:absolute; width:14px; height:14px; left:3px; top:3px; background:var(--muted); border-radius:2px; transition:.15s;}
+  input:checked + .slider{background:rgba(89,255,160,.15); border-color:var(--phosphor);}
+  input:checked + .slider:before{transform:translateX(16px); background:var(--phosphor); box-shadow:0 0 6px rgba(89,255,160,.7);}
+  .editor-grid{display:grid; grid-template-columns:repeat(4, 28px); grid-template-rows:repeat(4, 28px); gap:3px; margin:10px 0;}
+  .editor-cell{background:#0f1d16; border:1px solid var(--border); border-radius:2px; cursor:pointer;}
+  .editor-cell.on{background:var(--phosphor); box-shadow:0 0 6px rgba(89,255,160,.6);}
+  .editor-controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;}
+  .editor-controls input[type=text]{background:#0f1d16; border:1px solid var(--border); color:var(--text); border-radius:4px; padding:6px 8px; font-size:12px; width:110px; font-family:var(--font-mono);}
+  .editor-controls input[type=color]{width:34px; height:30px; border:none; background:none; cursor:pointer;}
+  .custom-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .custom-chip{display:flex; align-items:center; gap:6px; background:#0f1d16; border:1px solid var(--border); border-radius:5px; padding:5px 8px; font-size:11px;}
+  .custom-chip button{padding:2px 7px; font-size:10px; background:var(--danger); color:#2a0b0b;}
+  .menu-close{width:100%; margin-top:6px; background:#152018; color:var(--muted); border:1px solid var(--border);}
+</style>
 </head>
 <body>
-  <!-- HUD -->
-  <div id="score1" class="info">S1 Zeit: 0.00s</div>
-  <div id="lives1" class="info">S1 Leben: 10</div>
-  <div id="controls1" class="info">
-    <div id="p1Up" class="touch-btn">↑</div>
-    <div id="p1Down" class="touch-btn">↓</div>
-  <div id="score2" class="info">S2 Zeit: 0.00s</div>
-  <div id="lives2" class="info">S2 Leben: 10</div>
-  Steuerung: S1 = Q / E -------- S2 = U / O
-
-  <div id="controls2" class="info">
-    <div id="p2Up" class="touch-btn">↑</div>
-    <div id="p2Down" class="touch-btn">↓</div>
+<div class="page">
+  <div class="topbar">
+    <button id="togglePlayers" class="mode-btn">👥 2 Spieler</button>
+    <div class="randomizer-control">
+      <label for="randomizerSelect">🎲 Chaos</label>
+      <select id="randomizerSelect">
+        <option value="off">Aus</option>
+        <option value="light">Leicht</option>
+        <option value="normal" selected>Normal</option>
+        <option value="heavy">Intensiv</option>
+      </select>
+      <button id="randomizerFire" class="mode-btn small">Jetzt!</button>
+    </div>
   </div>
 
-  <!-- Canvas -->
-  <canvas id="game"></canvas>
-
-  <!-- Start Screen -->
-  <div id="startScreen">
-    <h1>2-Spieler Auto Spiel</h1>
-    <label for="difficulty">Schwierigkeitsgrad:</label>
-    <select id="difficulty">
-      <option value="easy">Leicht</option>
-      <option value="medium" selected>Mittel</option>
-      <option value="hard">Schwer</option>
-    </select>
-    <button id="startBtn">Start</button>
-    <div id="highscoreDisplay">Bestzeit: --</div>
+  <div class="wrap">
+    <div id="players"></div>
+    <div class="side">
+      <div class="card">
+        <h3>Bestenliste</h3>
+        <ol class="hs-list" id="hsList"></ol>
+      </div>
+      <div class="card keys">
+        <h3>Steuerung</h3>
+        <b>A</b> links &nbsp; <b>D</b> rechts &nbsp; <b>S</b> weich<br>
+        <b>W</b> drehen &nbsp; <b>H</b> halten<br>
+        <b>Leertaste</b> hart fallen<br>
+        <div class="p2">
+          <b>←</b> <b>→</b> Bewegen &nbsp; <b>↓</b> weich<br>
+          <b>↑</b> drehen &nbsp; <b>Shift</b> halten &nbsp; <b>Enter</b> hart
+        </div>
+        <b>P</b> Pause &nbsp; <b>R</b> Reset
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- End Screen -->
-  <div id="endScreen" style="display:none;">
-    <h2 id="resultText"></h2>
-    <div id="newHighscore" style="margin:8px 0;"></div>
-    <button id="restartBtn">Erneut Spielen</button>
+<div id="secretMenu">
+  <div class="menu-box">
+    <h2>🕹️ Geheimes Menü</h2>
+    <p class="hint">Y + X gleichzeitig zum Schließen/Öffnen. R setzt jederzeit direkt zurück.</p>
+    <div class="menu-section">
+      <h3>Aktive Formen</h3>
+      <div class="shape-toggles" id="shapeToggles"></div>
+    </div>
+    <div class="menu-section">
+      <h3>Experimente</h3>
+      <div class="toggle-row"><div><div>Geister-Vorschau</div><div class="desc">Zeigt, wo der Stein landet</div></div><label class="switch"><input type="checkbox" id="toggleGhost" checked><span class="slider"></span></label></div>
+      <div class="toggle-row"><div><div>Regenbogen-Blöcke</div><div class="desc">Farben pulsieren durch den Regenbogen</div></div><label class="switch"><input type="checkbox" id="toggleRainbow"><span class="slider"></span></label></div>
+      <div class="toggle-row"><div><div>Gespiegelte Steuerung</div><div class="desc">Links/Rechts vertauscht (beide Spieler)</div></div><label class="switch"><input type="checkbox" id="toggleMirror"><span class="slider"></span></label></div>
+      <div class="toggle-row"><div><div>Chaos-Gravitation</div><div class="desc">Fallgeschwindigkeit schwankt zufällig</div></div><label class="switch"><input type="checkbox" id="toggleChaos"><span class="slider"></span></label></div>
+    </div>
+    <div class="menu-section">
+      <h3>Formeditor</h3>
+      <div class="editor-grid" id="editorGrid"></div>
+      <div class="editor-controls">
+        <input type="text" id="editorName" placeholder="Name (z.B. X)" maxlength="8">
+        <input type="color" id="editorColor" value="#ff9ecb">
+        <button id="editorSave">Hinzufügen</button>
+        <button id="editorClear" style="background:#2b2f3d; color:var(--text);">Leeren</button>
+      </div>
+      <div class="custom-list" id="customList"></div>
+    </div>
+    <button class="menu-close" id="menuCloseBtn">Schließen</button>
   </div>
+</div>
 
 <script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-let W = window.innerWidth, H = window.innerHeight;
-canvas.width = W; canvas.height = H;
-window.addEventListener('resize', () => { W=innerWidth; H=innerHeight; canvas.width=W; canvas.height=H; computeGeometry(); });
+/* =========================================================================
+   TETRIS — modular & erweiterbar, mehrspielerfähig
+   Jedes Spielfeld ist eine unabhängige "Game"-Instanz (siehe createGame()).
+   Gemeinsam genutzt werden nur kosmetische/Formen-Einstellungen (CONFIG,
+   SHAPES, customShapes, enabledShapes, globalToggles) sowie Highscores.
+   ========================================================================= */
 
-// Geometry
-const laneCount = 3;
-let roadHeight, roadY, laneHeight, stepSize, carSize;
-function computeGeometry(){ roadHeight = H*0.3; roadY=(H-roadHeight)/2; laneHeight=roadHeight/laneCount; stepSize=laneHeight/4; carSize=laneHeight*0.8; }
-computeGeometry();
+const CONFIG = {
+  cols: 10, rows: 20, cellSize: 26,
+  dropIntervalStart: 800, dropIntervalMin: 100, levelSpeedup: 60, linesPerLevel: 10,
+  lockDelayMs: 500,          // Zeitfenster nach dem Aufsetzen, bevor der Stein einrastet
+  comboBaseBonus: 50,        // Punkte pro Combo-Stufe, multipliziert mit Level
+  keys: { pause: ['p','P'], reset: ['r','R'] },
+  colors: {
+    I: '#41e8ff', O: '#ffe14d', T: '#e05cff', S: '#59ffa0', Z: '#ff4d6a', J: '#5c7bff', L: '#ff9f40',
+    ghost: 'rgba(89,255,160,0.14)', WALL: '#3a4048', garbage: '#565c66'
+  },
+  maxHighscores: 8
+};
 
-// Game state
-const maxLives = 10;
-let player1, player2;
-let obstacles = [], frame=0;
-let spawnInterval, speeds;
-const keys = {};
-let running = false;
+const P1_KEYS = { left:['a','A'], right:['d','D'], softDrop:['s','S'], rotate:['w','W'], hardDrop:[' '], hold:['h','H'] };
+const P2_KEYS = { left:['ArrowLeft'], right:['ArrowRight'], softDrop:['ArrowDown'], rotate:['ArrowUp'], hardDrop:['Enter'], hold:['Shift'] };
 
-// DOM
-const score1El = document.getElementById('score1');
-const score2El = document.getElementById('score2');
-const lives1El = document.getElementById('lives1');
-const lives2El = document.getElementById('lives2');
-const startScreen = document.getElementById('startScreen');
-const endScreen = document.getElementById('endScreen');
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
-const highscoreDisplay = document.getElementById('highscoreDisplay');
-const resultText = document.getElementById('resultText');
-const newHighscore = document.getElementById('newHighscore');
-const difficultySelect = document.getElementById('difficulty');
+const SHAPES = {
+  I: [[[1,0],[1,1],[1,2],[1,3]],[[0,2],[1,2],[2,2],[3,2]],[[2,0],[2,1],[2,2],[2,3]],[[0,1],[1,1],[2,1],[3,1]]],
+  O: [[[0,1],[0,2],[1,1],[1,2]],[[0,1],[0,2],[1,1],[1,2]],[[0,1],[0,2],[1,1],[1,2]],[[0,1],[0,2],[1,1],[1,2]]],
+  T: [[[0,1],[1,0],[1,1],[1,2]],[[0,1],[1,1],[1,2],[2,1]],[[1,0],[1,1],[1,2],[2,1]],[[0,1],[1,0],[1,1],[2,1]]],
+  S: [[[0,1],[0,2],[1,0],[1,1]],[[0,1],[1,1],[1,2],[2,2]],[[1,1],[1,2],[2,0],[2,1]],[[0,0],[1,0],[1,1],[2,1]]],
+  Z: [[[0,0],[0,1],[1,1],[1,2]],[[0,2],[1,1],[1,2],[2,1]],[[1,0],[1,1],[2,1],[2,2]],[[0,1],[1,0],[1,1],[2,0]]],
+  J: [[[0,0],[1,0],[1,1],[1,2]],[[0,1],[0,2],[1,1],[2,1]],[[1,0],[1,1],[1,2],[2,2]],[[0,1],[1,1],[2,0],[2,1]]],
+  L: [[[0,2],[1,0],[1,1],[1,2]],[[0,1],[1,1],[2,1],[2,2]],[[1,0],[1,1],[1,2],[2,0]],[[0,0],[0,1],[1,1],[2,1]]]
+};
+const SHAPE_NAMES = Object.keys(SHAPES);
+const customShapes = {};                       // Formen aus dem Editor: { Name: {rotations, color} }
+const enabledShapes = new Set(SHAPE_NAMES);     // welche Standardformen aktiv sind
+const globalToggles = { ghost:true, rainbow:false, mirror:false, chaos:false };
+let rainbowHue = 0, globalTempExpiry = {}, menuOpen = false, twoPlayerMode = false;
+let randomizerIntensity = 'normal', randomizerTimer = 0;
+const RANDOMIZER_INTERVALS = { light:30000, normal:18000, heavy:9000 };
 
-// Touch buttons
-['p1Up','p1Down','p2Up','p2Down'].forEach(id => {
-  const btn = document.getElementById(id);
-  btn.addEventListener('touchstart', e=> { e.preventDefault(); handleTouch(id); });
-  btn.addEventListener('mousedown', ()=> handleTouch(id));
-});
-function handleTouch(id) {
-  if(!running) return;
-  if(id==='p1Up' && player1.step>0) player1.step--;
-  if(id==='p1Down' && player1.step<laneCount*4) player1.step++;
-  if(id==='p2Up' && player2.step>0) player2.step--;
-  if(id==='p2Down' && player2.step<laneCount*4) player2.step++;
+function createGrid(){ return Array.from({length:CONFIG.rows}, () => Array(CONFIG.cols).fill(null)); }
+function activeShapePool(){ const p = SHAPE_NAMES.filter(n=>enabledShapes.has(n)); p.push(...Object.keys(customShapes)); return p.length?p:SHAPE_NAMES.slice(); }
+function shapeRotations(name){ return customShapes[name] ? customShapes[name].rotations : SHAPES[name]; }
+function hashName(name){ let h=0; for (const ch of name) h=(h*31+ch.charCodeAt(0))%360; return h; }
+function shapeColor(name){
+  if (name==='WALL'||name==='garbage') return CONFIG.colors[name];
+  if (globalToggles.rainbow) return `hsl(${(rainbowHue+hashName(name))%360}, 85%, 62%)`;
+  return customShapes[name] ? customShapes[name].color : CONFIG.colors[name];
 }
+function randomShapeName(){ const p = activeShapePool(); return p[Math.floor(Math.random()*p.length)]; }
+function scoreForClear(lines, level){ return ({1:100,2:300,3:500,4:800}[lines]||0) * level; }
 
-// Keyboard
-document.addEventListener('keydown', e=> {
-  keys[e.key.toLowerCase()] = true;
-});
+// Sucht eine freie Spalte für einen neuen Stein an der "Spawn-Kante" (oben bei normaler
+// Schwerkraft, unten bei umgekehrter). Wichtig bei umgekehrter Schwerkraft: dort können
+// am unteren Rand bereits Blöcke aus der Zeit vor dem Umkehren liegen.
+function spawnPiece(g, name){
+  // Die Spawn-Zeile wird anhand der tatsächlich genutzten Zeilen der Form berechnet, damit
+  // der Stein wie bei normaler Schwerkraft nur eine einzige Live-Zeile berührt und nicht
+  // (wie zuvor pauschal) mehrere Zeilen tief in einen bereits vorhandenen Stapel hineinragt.
+  const rowsUsed = shapeRotations(name)[0].map(([r]) => r);
+  const spawnEdge = g.gravityDir; // welche Kante für DIESEN Stein der Puffer ist, bleibt fix
+  const centerCol = 3;
 
-document.addEventListener('keyup', e=> {
-  keys[e.key.toLowerCase()] = false;
-});
-
-// Initialize
-function initGame(){
-  player1 = { step:6, lives:maxLives, start:Date.now(), stopTime:null, color:'red' };
-  player2 = { step:6, lives:maxLives, start:Date.now(), stopTime:null, color:'blue' };
-  obstacles = [];
-  frame = 0;
-  const diff = difficultySelect.value;
-  if(diff==='easy'){ spawnInterval=110; speeds={hole:2, construction:1.5, accident:2, block:1}; }
-  else if(diff==='hard'){ spawnInterval=60; speeds={hole:6, construction:5.25, accident:6, block:4.75}; }
-  else { spawnInterval=80; speeds={hole:3, construction:2, accident:2.5, block:2}; }
-  running = true;
-  readHighscore();
-  startScreen.style.display='none';
-  endScreen.style.display='none';
-  loop();
-}
-
-startBtn.onclick = initGame;
-restartBtn.onclick = () => location.reload();
-
-// Highscore
-function readHighscore(){
-  const hs = localStorage.getItem('highscore');
-  highscoreDisplay.textContent = hs ? `Bestzeit: ${hs}s` : 'Bestzeit: --';
-}
-function saveHighscore(time){
-  const prev = parseFloat(localStorage.getItem('highscore')||'0');
-  if(time>prev){
-    localStorage.setItem('highscore', time.toFixed(2));
-    return true;
+  if (g.gravityDir===1){
+    // Klassisches Verhalten: fix oben mittig, tiefste Zeile der Form -> Zeile 0.
+    const row = -Math.max(...rowsUsed);
+    return { name, rotation:0, row, col:centerCol, spawnEdge };
   }
-  return false;
+
+  // Umgekehrte Schwerkraft: bei jedem Spawn LIVE vom aktuellen Grid-Zustand aus suchen,
+  // statt sich eine "Stapeltiefe" zu merken. Ein gemerkter Wert würde nach jeder
+  // Zeilen-Klärung veralten (dabei verschieben sich alle Zeilen-Indizes im Grid), und genau
+  // das führte zuvor zu Fehlplatzierungen/"Stapeln" an falscher Stelle. Live-Suche von der
+  // Decke abwärts ist dagegen immer korrekt, egal was seitdem geklärt wurde.
+  const ceilingRow = -Math.min(...rowsUsed);           // höchstmögliche Position: Stein berührt Zeile 0
+  const floorRow = CONFIG.rows - 1 - Math.max(...rowsUsed); // tiefstmögliche Position im ganzen Feld
+  const colOrder = [centerCol];
+  for (let d=1; d<CONFIG.cols; d++){ colOrder.push(centerCol-d); colOrder.push(centerCol+d); }
+
+  // Zuerst möglichst weit unten versuchen (dort ist zu Beginn der Umkehrung meist noch viel
+  // Platz, bevor der neu wachsende Umkehr-Stapel von der Decke aus tiefer reicht) — nur wenn
+  // dort kein Platz mehr ist, weiter Richtung Decke hochsuchen.
+  for (let row = floorRow; row >= ceilingRow; row--){
+    for (const col of colOrder){
+      if (!collides(g, { name, rotation:0, row, col, spawnEdge })) return { name, rotation:0, row, col, spawnEdge };
+    }
+  }
+  return { name, rotation:0, row:ceilingRow, col:centerCol, spawnEdge }; // wirklich kein Platz -> Game Over
+}
+function cellsOf(piece){ return shapeRotations(piece.name)[piece.rotation].map(([r,c])=>[r+piece.row,c+piece.col]); }
+function rotateCells90(cells, size=4){ return cells.map(([r,c])=>[c, size-1-r]); }
+
+// --------------------------------------------------------------------------
+// Eine Game-Instanz kapselt ein komplettes, unabhängiges Spielfeld.
+// --------------------------------------------------------------------------
+function createGame(n, keys){
+  const dom = {
+    canvas: document.getElementById('board'+n), ctx: null,
+    nextCanvas: document.getElementById('next'+n), nextCtx: null,
+    holdCanvas: document.getElementById('hold'+n), holdCtx: null,
+    toast: document.getElementById('toast'+n),
+    overlay: document.getElementById('overlay'+n),
+    overlayTitle: document.getElementById('overlayTitle'+n),
+    overlayText: document.getElementById('overlayText'+n),
+    overlayBtn: document.getElementById('overlayBtn'+n),
+    hsForm: document.getElementById('hsForm'+n), hsName: document.getElementById('hsName'+n), hsSave: document.getElementById('hsSave'+n),
+    scoreEl: document.getElementById('score'+n), levelEl: document.getElementById('level'+n),
+    linesEl: document.getElementById('lines'+n), comboEl: document.getElementById('combo'+n), comboNumEl: document.getElementById('comboNum'+n),
+    block: document.getElementById('playerBlock'+n)
+  };
+  dom.ctx = dom.canvas.getContext('2d'); dom.canvas.width = CONFIG.cols*CONFIG.cellSize; dom.canvas.height = CONFIG.rows*CONFIG.cellSize;
+  dom.nextCtx = dom.nextCanvas.getContext('2d'); dom.holdCtx = dom.holdCanvas.getContext('2d');
+
+  const g = {
+    id:n, keys, dom, active:n===1,
+    grid:createGrid(), current:null, next:null, hold:null, holdLocked:false,
+    dropTimer:0, dropInterval:CONFIG.dropIntervalStart, lockTimer:0,
+    score:0, level:1, lines:0, combo:0,
+    gravityDir:1, gravityFlipPending:null, gravityRevertPending:false, tempSpeedMultiplier:1, tempExpiry:{},
+    paused:false, gameOver:false, gameOverHandled:false
+  };
+  g.actions = {
+    left: () => tryMove(g, 0, globalToggles.mirror ? 1 : -1),
+    right: () => tryMove(g, 0, globalToggles.mirror ? -1 : 1),
+    softDrop: () => softDrop(g),
+    rotate: () => tryRotate(g),
+    hardDrop: () => hardDrop(g),
+    hold: () => doHold(g)
+  };
+  dom.overlayBtn.addEventListener('click', () => g._overlayAction && g._overlayAction());
+  dom.hsSave.addEventListener('click', () => {
+    const name = (dom.hsName.value.trim() || 'ANON').toUpperCase().slice(0,10);
+    localStorage.setItem('tetris_playername', name);
+    saveHighscore(name, g.score);
+    dom.hsForm.style.display = 'none';
+  });
+  return g;
 }
 
-// Obstacles
-function spawnObstacle(){
-  const r=Math.random();
-  let type=null;
-  if(r<0.025) type='construction';
-  else if(r<0.085) type='accident';
-  else if(r<0.105) type='block';
-  else if(r<0.355) type='hole';
-  if(!type) return;
-  const lane=Math.floor(Math.random()*laneCount);
-  if(type==='hole'){
-    const size=carSize*0.4;
-    obstacles.push({type,lane,x:W,w:size,h:size,speed:speeds.hole});
-  } else if(type==='construction'){
-    const width=carSize*(2+Math.random()*2); // länger
-    const height=carSize*(0.8+Math.random()*0.8);
-    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.construction});
-  } else if(type==='accident'){
-    const width=carSize*(1+Math.random()*0.5);
-    const height=carSize*(0.8+Math.random()*0.4);
-    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.accident});
-  } else if(type==='block'){
-    const width=carSize*(40+Math.random()*50);
-    const height=laneHeight;
-    obstacles.push({type,lane,x:W,w:width,h:height,speed:speeds.block});
+function collides(g, piece, dRow=0, dCol=0, rotation=piece.rotation){
+  const cells = shapeRotations(piece.name)[rotation].map(([r,c])=>[r+piece.row+dRow, c+piece.col+dCol]);
+  // Welche Kante für DIESEN Stein der Spawn-Puffer ist, wird bei seiner Erzeugung festgelegt
+  // (piece.spawnEdge) und ändert sich nicht mehr, auch wenn die Schwerkraft später umkippt.
+  // So wird ein Stein nie allein durch einen Schwerkraft-Wechsel unfair "eingeklemmt".
+  const edge = piece.spawnEdge ?? g.gravityDir;
+  return cells.some(([r,c])=>{
+    if (c<0 || c>=CONFIG.cols) return true;
+    if (edge===1) { if (r>=CONFIG.rows) return true; if (r<0) return false; }
+    else { if (r<0) return true; if (r>=CONFIG.rows) return false; }
+    return g.grid[r][c] !== null;
+  });
+}
+function isGrounded(g){ return collides(g, g.current, g.gravityDir, 0); }
+function tryMove(g, dRow, dCol){ if (!collides(g,g.current,dRow,dCol)){ g.current.row+=dRow; g.current.col+=dCol; g.lockTimer=0; return true; } return false; }
+function tryRotate(g){
+  const nextRotation=(g.current.rotation+1)%4, kicks=[0,-1,1,-2,2];
+  for (const k of kicks){ if (!collides(g,g.current,0,k,nextRotation)){ g.current.col+=k; g.current.rotation=nextRotation; g.lockTimer=0; return; } }
+}
+function hardDrop(g){
+  // Sicherheitsgrenze: normalerweise stoppt ein Stein spätestens nach "rows"-Schritten am
+  // Boden/Deckel. Der Cap verhindert, dass das Spiel bei einem unvorhergesehenen Sonderfall
+  // (z.B. Rand-Kollisionslogik) in einer Endlosschleife hängen bleibt.
+  let dist=0; const maxDist=CONFIG.rows+4;
+  while(dist<maxDist && !collides(g,g.current,(dist+1)*g.gravityDir,0)) dist++;
+  g.current.row += dist*g.gravityDir;
+  lockPiece(g); updateHud(g);
+}
+function softDrop(g){ return tryMove(g, g.gravityDir, 0); }
+
+function lockPiece(g){
+  cellsOf(g.current).forEach(([r,c]) => { if (r>=0 && r<CONFIG.rows) g.grid[r][c] = g.current.name; });
+  const cleared = clearLines(g);
+  if (cleared>0){
+    g.combo++;
+    const bonus = g.combo>1 ? (g.combo-1)*CONFIG.comboBaseBonus*g.level : 0;
+    g.score += bonus;
+    if (g.combo>=2) showToast(g, `🔥 Combo ×${g.combo}!`);
+  } else {
+    g.combo = 0;
+  }
+  // Jede Schwerkraft-Änderung — hin UND zurück — greift erst jetzt, zwischen zwei
+  // Steinen, nie während ein Stein noch fällt. So passt die Fallrichtung eines Steins
+  // garantiert zu seiner Puffer-Kante und er kann nie "durchrutschen" und hängen bleiben.
+  const nextName = g.next.name;
+  if (g.gravityRevertPending){
+    g.gravityDir = 1; g.gravityRevertPending = false;
+    settleGravity(g); // liegende Blöcke fallen jetzt nach unten
+    showToast(g, '⬇️ Schwerkraft wieder normal!');
+  } else if (g.gravityFlipPending){
+    g.gravityDir = -1;
+    applyTemp(g, 'gravityFlip', g.gravityFlipPending.duration);
+    showToast(g, '🙃 Schwerkraft umgekehrt!');
+    g.gravityFlipPending = null;
+  }
+  // Der bereits vorbereitete "nächste" Stein wird an der (ggf. neuen) Kante neu positioniert.
+  g.current = spawnPiece(g, nextName);
+  g.next = spawnPiece(g, randomShapeName());
+  g.holdLocked = false; g.lockTimer = 0;
+  updateHud(g); drawNext(g); drawHold(g);
+  if (collides(g, g.current)) triggerGameOver(g);
+}
+
+function doHold(g){
+  if (g.holdLocked || !g.current) return;
+  const currentName = g.current.name;
+  if (g.hold===null){ g.hold=currentName; g.current=spawnPiece(g, g.next.name); g.next=spawnPiece(g, randomShapeName()); }
+  else { const swap=g.hold; g.hold=currentName; g.current=spawnPiece(g, swap); }
+  g.holdLocked = true; g.lockTimer = 0;
+  drawHold(g); drawNext(g);
+  if (collides(g, g.current)) triggerGameOver(g);
+}
+
+function clearLines(g){
+  let cleared = 0;
+  for (let r=CONFIG.rows-1; r>=0; r--){
+    if (g.grid[r].every(cell=>cell!==null) && !g.grid[r].includes('WALL')){
+      g.grid.splice(r,1); g.grid.unshift(Array(CONFIG.cols).fill(null)); cleared++; r++;
+    }
+  }
+  if (cleared>0){
+    g.score += scoreForClear(cleared, g.level);
+    g.lines += cleared;
+    const newLevel = Math.floor(g.lines/CONFIG.linesPerLevel)+1;
+    if (newLevel !== g.level){ g.level=newLevel; g.dropInterval = Math.max(CONFIG.dropIntervalMin, CONFIG.dropIntervalStart-(g.level-1)*CONFIG.levelSpeedup); }
+  }
+  return cleared;
+}
+
+// --------------------------------------------------------------------------
+// Rendering
+// --------------------------------------------------------------------------
+function drawCell(context,row,col,color,size,opts={}){ drawCellAt(context, col*size, row*size, color, size, opts); }
+function drawCellAt(context,x,y,color,size,opts={}){
+  const pad=1, w=size-pad*2, h=size-pad*2;
+  if (opts.ghost){ context.strokeStyle=color; context.lineWidth=1.5; context.strokeRect(x+pad+1,y+pad+1,w-2,h-2); return; }
+  const grad = context.createLinearGradient(x,y,x,y+size);
+  grad.addColorStop(0, shade(color,18)); grad.addColorStop(1, shade(color,-18));
+  context.fillStyle = grad; context.fillRect(x+pad,y+pad,w,h);
+  context.fillStyle='rgba(255,255,255,0.32)'; context.fillRect(x+pad,y+pad,w,2); context.fillRect(x+pad,y+pad,2,h);
+  context.fillStyle='rgba(0,0,0,0.35)'; context.fillRect(x+pad,y+h-1,w,2); context.fillRect(x+w-1,y+pad,2,h);
+  if (opts.glow){ context.save(); context.shadowColor=color; context.shadowBlur=10; context.strokeStyle=color; context.lineWidth=1; context.strokeRect(x+pad+0.5,y+pad+0.5,w-1,h-1); context.restore(); }
+}
+function shade(hex, amt){
+  if (hex.startsWith('hsl')||hex.startsWith('rgba')) return hex;
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)+amt, g=(n>>8&0xff)+amt, b=(n&0xff)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return `#${(1<<24|r<<16|g<<8|b).toString(16).slice(1)}`;
+}
+
+function draw(g){
+  const ctx=g.dom.ctx, canvas=g.dom.canvas;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='rgba(89,255,160,0.06)';
+  for (let c=0;c<=CONFIG.cols;c++){ ctx.beginPath(); ctx.moveTo(c*CONFIG.cellSize,0); ctx.lineTo(c*CONFIG.cellSize,canvas.height); ctx.stroke(); }
+  for (let r=0;r<=CONFIG.rows;r++){ ctx.beginPath(); ctx.moveTo(0,r*CONFIG.cellSize); ctx.lineTo(canvas.width,r*CONFIG.cellSize); ctx.stroke(); }
+  for (let r=0;r<CONFIG.rows;r++) for (let c=0;c<CONFIG.cols;c++){ const v=g.grid[r][c]; if(v) drawCell(ctx,r,c,shapeColor(v),CONFIG.cellSize); }
+  if (g.current){
+    if (globalToggles.ghost){
+      let gd=0; const maxGd=CONFIG.rows+4;
+      while(gd<maxGd && !collides(g,g.current,(gd+1)*g.gravityDir,0)) gd++;
+      cellsOf(g.current).forEach(([r,c])=>{ const gr=r+gd*g.gravityDir; if(gr>=0&&gr<CONFIG.rows) drawCell(ctx,gr,c,shapeColor(g.current.name),CONFIG.cellSize,{ghost:true}); });
+    }
+    cellsOf(g.current).forEach(([r,c])=>{ if(r>=0&&r<CONFIG.rows) drawCell(ctx,r,c,shapeColor(g.current.name),CONFIG.cellSize,{glow:true}); });
   }
 }
-function updateObstacles(){ obstacles.forEach(o=>o.x-=o.speed); obstacles=obstacles.filter(o=>o.x+o.w>0); }
+function drawNext(g){
+  const ctx=g.dom.nextCtx, cv=g.dom.nextCanvas; ctx.clearRect(0,0,cv.width,cv.height);
+  if (!g.next) return;
+  const size=13, shape=shapeRotations(g.next.name)[0];
+  const ox=(cv.width-4*size)/2, oy=(cv.height-4*size)/2;
+  shape.forEach(([r,c])=>drawCellAt(ctx, ox+c*size, oy+r*size, shapeColor(g.next.name), size));
+}
+function drawHold(g){
+  const ctx=g.dom.holdCtx, cv=g.dom.holdCanvas; ctx.clearRect(0,0,cv.width,cv.height);
+  if (!g.hold) return;
+  const size=13, shape=shapeRotations(g.hold)[0];
+  const ox=(cv.width-4*size)/2, oy=(cv.height-4*size)/2;
+  ctx.globalAlpha = g.holdLocked ? 0.45 : 1;
+  shape.forEach(([r,c])=>drawCellAt(ctx, ox+c*size, oy+r*size, shapeColor(g.hold), size));
+  ctx.globalAlpha = 1;
+}
+function updateHud(g){
+  g.dom.scoreEl.textContent=g.score; g.dom.levelEl.textContent=g.level; g.dom.linesEl.textContent=g.lines;
+  if (g.combo>=2){ g.dom.comboEl.hidden=false; g.dom.comboNumEl.textContent=g.combo; } else { g.dom.comboEl.hidden=true; }
+}
 
-// Players
-function updatePlayers(){
-  if(!running) return;
-  if(player1.lives>0){
-    if(keys['q'] && player1.step>0){ player1.step--; keys['q']=false; }
-    if(keys['e'] && player1.step<laneCount*4){ player1.step++; keys['e']=false; }
+// --------------------------------------------------------------------------
+// Overlay / Pause / Game Over pro Spielfeld
+// --------------------------------------------------------------------------
+function showOverlay(g, title, text, btnLabel, onClick){
+  g.dom.overlayTitle.textContent=title; g.dom.overlayText.textContent=text; g.dom.overlayBtn.textContent=btnLabel;
+  g.dom.overlay.style.display='flex'; g._overlayAction=onClick;
+}
+function hideOverlay(g){ g.dom.overlay.style.display='none'; }
+
+function toggleGlobalPause(){
+  const anyPaused = games.some(g=>g.active && g.paused);
+  const newState = !anyPaused;
+  games.forEach(g=>{
+    if (!g.active || g.gameOver) return;
+    g.paused = newState;
+    if (g.paused) showOverlay(g,'Pausiert','Drücke P zum Fortsetzen','Fortsetzen', () => { g.paused=false; hideOverlay(g); });
+    else hideOverlay(g);
+  });
+}
+
+// Setzt Schwerkraft (pro Spielfeld) und Spiegel-Steuerung (global, gilt für beide Spieler)
+// zurück auf den Normalzustand. Wird nach jedem Spielende (gewonnen/verloren) und bei
+// jedem Reset aufgerufen, damit kein Chaos-Effekt über eine Partie hinaus bestehen bleibt.
+function resetGravityAndMirror(g){
+  g.gravityDir = 1; g.gravityFlipPending = null; g.gravityRevertPending = false;
+  g.tempSpeedMultiplier = 1; g.tempExpiry = {};
+  globalToggles.mirror = false;
+  const mirrorCheckbox = document.getElementById('toggleMirror');
+  if (mirrorCheckbox) mirrorCheckbox.checked = false;
+}
+
+function restartGame(g){
+  g.grid=createGrid();
+  resetGravityAndMirror(g);
+  g.current=spawnPiece(g, randomShapeName()); g.next=spawnPiece(g, randomShapeName());
+  g.score=0; g.level=1; g.lines=0; g.combo=0;
+  g.dropInterval=CONFIG.dropIntervalStart; g.dropTimer=0; g.lockTimer=0;
+  g.paused=false; g.gameOver=false; g.gameOverHandled=false;
+  g.hold=null; g.holdLocked=false;
+  g.dom.hsForm.style.display='none'; hideOverlay(g);
+  updateHud(g); drawNext(g); drawHold(g); draw(g);
+}
+// Lässt beim Zurückkippen auf normale Schwerkraft alle liegenden Blöcke pro Spalte
+// nach unten rutschen (Lücken werden geschlossen), prüft danach auf neue Zeilenklärungen.
+function settleGravity(g){
+  for (let c=0; c<CONFIG.cols; c++){
+    const values = [];
+    for (let r=0; r<CONFIG.rows; r++){ if (g.grid[r][c] !== null) values.push(g.grid[r][c]); }
+    const column = Array(CONFIG.rows - values.length).fill(null).concat(values);
+    for (let r=0; r<CONFIG.rows; r++) g.grid[r][c] = column[r];
   }
-  if(player2.lives>0){
-    if(keys['u'] && player2.step>0){ player2.step--; keys['u']=false; }
-    if(keys['o'] && player2.step<laneCount*4){ player2.step++; keys['o']=false; }
+  const cleared = clearLines(g);
+  updateHud(g);
+  if (cleared > 0) showToast(g, '🌀 Blöcke fallen & Zeilen geklärt!');
+}
+
+function triggerGameOver(g){
+  g.gameOver = true;
+  resetGravityAndMirror(g);
+}
+function handleGameOver(g){
+  g.gameOverHandled = true;
+  showOverlay(g,'Game Over', `Punkte: ${g.score}`, 'Neu starten', () => restartGame(g));
+  if (qualifiesForHighscore(g.score)){
+    g.dom.hsForm.style.display='flex';
+    g.dom.hsName.value = localStorage.getItem('tetris_playername') || '';
+  } else {
+    g.dom.hsForm.style.display='none';
   }
 }
 
-// Collisions
-function checkCollisions(){ obstacles.forEach((o,i)=>{
-    [player1,player2].forEach((p,idx)=>{
-      if(p.lives>0 && Math.floor(p.step/4)===o.lane){
-        const carX=W*(idx===0?0.3:0.35)-carSize/2;
-        const carY=roadY+(p.step*stepSize)-carSize/2;
-        const obsY=roadY+o.lane*laneHeight+(laneHeight-o.h)/2;
-        if(o.x<carX+carSize&&o.x+o.w>carX&&obsY<carY+carSize&&obsY+o.h>carY){
-          p.lives-=(o.type==='hole'?1:10);
-          if(p.lives<0) p.lives=0;
-          if(p.lives===0) p.stopTime=(Date.now()-p.start)/1000;
-          obstacles.splice(i,1);
-        }
+// --------------------------------------------------------------------------
+// Highscores (localStorage, gemeinsame Liste für beide Spieler)
+// --------------------------------------------------------------------------
+const HS_KEY = 'tetris_highscores_v2';
+function loadHighscores(){ try { return JSON.parse(localStorage.getItem(HS_KEY)) || []; } catch { return []; } }
+function saveHighscoreList(list){ try { localStorage.setItem(HS_KEY, JSON.stringify(list)); } catch {} }
+function renderHighscores(highlightIndex=-1){
+  const list=loadHighscores(), ol=document.getElementById('hsList'); ol.innerHTML='';
+  if (list.length===0){ ol.innerHTML='<li class="hs-empty">Noch keine Einträge</li>'; return; }
+  list.forEach((entry,i)=>{
+    const li=document.createElement('li'); if (i===highlightIndex) li.className='new';
+    li.innerHTML=`<span><span class="rank">${i+1}.</span>${entry.name}</span><span>${entry.score}</span>`;
+    ol.appendChild(li);
+  });
+}
+function qualifiesForHighscore(score){ const list=loadHighscores(); return score>0 && (list.length<CONFIG.maxHighscores || score>list[list.length-1].score); }
+function saveHighscore(name, score){
+  const list=loadHighscores(); list.push({name:name||'ANON', score}); list.sort((a,b)=>b.score-a.score);
+  const trimmed=list.slice(0,CONFIG.maxHighscores); saveHighscoreList(trimmed);
+  renderHighscores(trimmed.findIndex(e=>e.name===(name||'ANON') && e.score===score));
+}
+
+// --------------------------------------------------------------------------
+// Randomizer — global geplant, wirkt gezielt auf ein Spielfeld oder global.
+// Neues Ereignis: Objekt {name, scope:'game'|'global', apply} an RANDOMIZER_EVENTS anhängen.
+// --------------------------------------------------------------------------
+function showToast(g, text){
+  const el=g.dom.toast; el.textContent=text;
+  el.classList.remove('show'); void el.offsetWidth; // Animation bei schnell aufeinanderfolgenden Toasts neu starten
+  el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'), 3000);
+}
+function toastAll(text){ games.forEach(g=>{ if (g.active) showToast(g, text); }); }
+function applyTemp(g, key, ms){ g.tempExpiry[key]=Date.now()+ms; }
+function applyGlobalTemp(key, ms){ globalTempExpiry[key]=Date.now()+ms; }
+
+function addObstacleBlocks(g){
+  const count=2+Math.floor(Math.random()*3); let placed=0, attempts=0;
+  while (placed<count && attempts<50){
+    attempts++;
+    const r=6+Math.floor(Math.random()*(CONFIG.rows-8)), c=Math.floor(Math.random()*CONFIG.cols);
+    if (g.grid[r][c]===null){ g.grid[r][c]='WALL'; placed++; }
+  }
+  showToast(g, '🧱 Hindernis-Blöcke aufgetaucht!');
+}
+function addGarbageRow(g){
+  g.grid.shift();
+  const gap=Math.floor(Math.random()*CONFIG.cols);
+  g.grid.push(Array.from({length:CONFIG.cols}, (_,c)=> c===gap ? null : 'garbage'));
+  showToast(g, '⬆️ Müll-Zeile von unten!');
+}
+function shuffleColors(){
+  const pool=SHAPE_NAMES.map(n=>CONFIG.colors[n]);
+  for (let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  SHAPE_NAMES.forEach((n,i)=>CONFIG.colors[n]=pool[i]);
+  toastAll('🎨 Farben durchgemischt!');
+}
+function screenShake(g){ g.dom.canvas.classList.remove('shake'); void g.dom.canvas.offsetWidth; g.dom.canvas.classList.add('shake'); showToast(g,'💥 Bildschirm-Wackler!'); }
+
+const RANDOMIZER_EVENTS = [
+  { name:'obstacles', scope:'game', apply: g => addObstacleBlocks(g) },
+  { name:'garbage', scope:'game', apply: g => addGarbageRow(g) },
+  { name:'speed', scope:'game', apply: g => { g.tempSpeedMultiplier=0.45; applyTemp(g,'speedBurst',8000); showToast(g,'⚡ Tempo-Schub!'); } },
+  { name:'gravity', scope:'game', apply: g => {
+      // Ist die Schwerkraft schon umgekehrt (oder eine Umkehrung schon vorgemerkt), NICHTS tun —
+      // sonst würde jedes erneute Auswählen dieses Ereignisses den Rückkehr-Timer immer wieder
+      // überschreiben/verlängern, wodurch die Schwerkraft im schlimmsten Fall nie zurückkippt.
+      if (g.gravityDir===-1 || g.gravityFlipPending || g.gravityRevertPending) return;
+      const duration = 20000 + Math.random()*10000; // 20-30 Sekunden
+      g.gravityFlipPending = { duration };
+      showToast(g, '🙃 Schwerkraft kippt beim nächsten Stein…');
+    } },
+  { name:'shake', scope:'game', apply: g => screenShake(g) },
+  { name:'colors', scope:'global', apply: () => shuffleColors() },
+  { name:'mirror', scope:'global', apply: () => {
+      globalToggles.mirror = !globalToggles.mirror;
+      toastAll(globalToggles.mirror ? '🔀 Steuerung gespiegelt!' : '↩️ Steuerung wieder normal!');
+    } }
+];
+
+function triggerRandomEvent(){
+  const activeGames = games.filter(g=>g.active && !g.gameOver);
+  if (activeGames.length===0) return;
+  const ev = RANDOMIZER_EVENTS[Math.floor(Math.random()*RANDOMIZER_EVENTS.length)];
+  if (ev.scope==='global'){ ev.apply(); }
+  else {
+    const target = activeGames[Math.floor(Math.random()*activeGames.length)];
+    ev.apply(target);
+    // Nur Ereignisse, die tatsächlich Blöcke ins Feld setzen, können den aktuellen Stein
+    // "einklemmen" — Tempo/Schwerkraft/Wackeln verändern das Feld selbst nicht.
+    if ((ev.name==='obstacles' || ev.name==='garbage') && target.current && collides(target, target.current)) {
+      triggerGameOver(target);
+    }
+  }
+}
+
+// --------------------------------------------------------------------------
+// Spielfeld-Markup dynamisch erzeugen (spart Duplikate im HTML)
+// --------------------------------------------------------------------------
+function playerBlockHTML(n, label){
+  return `
+  <div class="player-block" id="playerBlock${n}">
+    <div class="player-header">
+      <span class="p-label">${label}</span>
+      <span class="p-stats">SCORE <b id="score${n}">0</b> · LVL <b id="level${n}">1</b> · LINES <b id="lines${n}">0</b></span>
+      <span class="combo-badge" id="combo${n}" hidden>COMBO ×<span id="comboNum${n}">2</span></span>
+    </div>
+    <div class="board-panel">
+      <div class="board-wrap">
+        <canvas id="board${n}"></canvas>
+        <div class="toast" id="toast${n}"></div>
+        <div class="overlay-el" id="overlay${n}">
+          <h2 id="overlayTitle${n}">Pausiert</h2>
+          <p id="overlayText${n}">Drücke P zum Fortsetzen</p>
+          <div class="hs-form" id="hsForm${n}" style="display:none;">
+            <input type="text" id="hsName${n}" placeholder="Kürzel" maxlength="10">
+            <button id="hsSave${n}">Speichern</button>
+          </div>
+          <button id="overlayBtn${n}">Fortsetzen</button>
+        </div>
+      </div>
+    </div>
+    <div class="mini-row">
+      <div class="mini-box"><span>HALTEN</span><canvas id="hold${n}" width="60" height="44"></canvas></div>
+      <div class="mini-box"><span>NÄCHSTE</span><canvas id="next${n}" width="60" height="60"></canvas></div>
+    </div>
+  </div>`;
+}
+document.getElementById('players').innerHTML = playerBlockHTML(1,'Spieler 1') + playerBlockHTML(2,'Spieler 2');
+document.getElementById('playerBlock2').style.display = 'none';
+
+const games = [ createGame(1, P1_KEYS), createGame(2, P2_KEYS) ];
+
+// --------------------------------------------------------------------------
+// Eingabe
+// --------------------------------------------------------------------------
+function isTypingInField(){ const t=document.activeElement && document.activeElement.tagName; return t==='INPUT'||t==='TEXTAREA'; }
+
+window.addEventListener('keydown', (e) => {
+  if (menuOpen) return;
+  if (CONFIG.keys.reset.includes(e.key)){ e.preventDefault(); games.forEach(g=>{ if (g.active) restartGame(g); }); return; }
+  if (CONFIG.keys.pause.includes(e.key)){ e.preventDefault(); toggleGlobalPause(); return; }
+  for (const g of games){
+    if (!g.active) continue;
+    for (const [action, keys] of Object.entries(g.keys)){
+      if (keys.includes(e.key)){
+        e.preventDefault();
+        if (g.paused || g.gameOver) return;
+        g.actions[action](); draw(g);
+        return;
       }
-    });
-  });
-}
-
-// Draw
-function draw(){
-  ctx.fillStyle='#070'; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle='#333'; ctx.fillRect(0,roadY,W,roadHeight);
-  ctx.strokeStyle='#666'; ctx.lineWidth=2; ctx.setLineDash([10,10]);
-  for(let i=1;i<laneCount;i++){ const y=roadY+i*laneHeight; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-  ctx.setLineDash([]);
-  obstacles.forEach(o=>{
-    const y=roadY+o.lane*laneHeight+(laneHeight-o.h)/2;
-    if(o.type==='hole'){
-      ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(o.x+o.w/2,y+o.h/2,o.w/2,0,2*Math.PI); ctx.fill();
-    } else if(o.type==='construction'){
-      // alte Grafik und längere Bauhindernisse
-      ctx.fillStyle='#fa0'; ctx.fillRect(o.x,y,o.w,o.h);
-      ctx.strokeStyle='#fff'; ctx.lineWidth=2;
-      ctx.beginPath();
-      ctx.moveTo(o.x,y);
-      ctx.lineTo(o.x+o.w,y+o.h);
-      ctx.moveTo(o.x,y+o.h);
-      ctx.lineTo(o.x+o.w,y);
-      ctx.stroke();
-    } else if(o.type==='accident'){
-      ctx.fillStyle='#800'; ctx.fillRect(o.x,y,o.w,o.h);
-      ctx.strokeStyle='#000'; ctx.lineWidth=2; ctx.strokeRect(o.x,y,o.w,o.h);
-    } else if(o.type==='block'){
-      ctx.fillStyle='#700'; ctx.fillRect(o.x,y,o.w,o.h);
-      ctx.strokeStyle='#fff'; ctx.lineWidth=3; ctx.strokeRect(o.x,y,o.w,o.h);
     }
+  }
+});
+
+// --------------------------------------------------------------------------
+// Toolbar: 2-Spieler-Umschalter & Randomizer-Regler
+// --------------------------------------------------------------------------
+const togglePlayersBtn = document.getElementById('togglePlayers');
+togglePlayersBtn.addEventListener('click', () => {
+  twoPlayerMode = !twoPlayerMode;
+  togglePlayersBtn.classList.toggle('active', twoPlayerMode);
+  togglePlayersBtn.textContent = twoPlayerMode ? '👤 1 Spieler' : '👥 2 Spieler';
+  const g2 = games[1];
+  g2.active = twoPlayerMode;
+  g2.dom.block.style.display = twoPlayerMode ? '' : 'none';
+  if (twoPlayerMode) restartGame(g2);
+});
+document.getElementById('randomizerSelect').addEventListener('change', e => { randomizerIntensity = e.target.value; randomizerTimer = 0; });
+document.getElementById('randomizerFire').addEventListener('click', () => triggerRandomEvent());
+
+// --------------------------------------------------------------------------
+// Geheimes Menü — Y + X gleichzeitig
+// --------------------------------------------------------------------------
+const secretMenu = document.getElementById('secretMenu');
+const heldKeys = new Set(); let menuArmed = true;
+window.addEventListener('keydown', (e) => {
+  if (isTypingInField()) return;
+  const k=e.key.toLowerCase();
+  if (k==='y'||k==='x'){ heldKeys.add(k); if (heldKeys.has('y')&&heldKeys.has('x')&&menuArmed){ menuArmed=false; toggleSecretMenu(); } }
+});
+window.addEventListener('keyup', (e) => {
+  const k=e.key.toLowerCase();
+  if (k==='y'||k==='x'){ heldKeys.delete(k); if (!heldKeys.has('y')||!heldKeys.has('x')) menuArmed=true; }
+});
+function toggleSecretMenu(){
+  menuOpen = !menuOpen;
+  if (menuOpen){ renderShapeToggles(); renderCustomList(); secretMenu.style.display='flex'; }
+  else secretMenu.style.display='none';
+}
+document.getElementById('menuCloseBtn').addEventListener('click', toggleSecretMenu);
+
+function renderShapeToggles(){
+  const box=document.getElementById('shapeToggles'); box.innerHTML='';
+  SHAPE_NAMES.forEach(name=>{
+    const chip=document.createElement('div'); const on=enabledShapes.has(name);
+    chip.className='shape-chip'+(on?'':' off');
+    chip.innerHTML=`<span class="swatch" style="background:${CONFIG.colors[name]}"></span>${name}`;
+    chip.onclick=()=>{ if (on && enabledShapes.size+Object.keys(customShapes).length<=1) return; on?enabledShapes.delete(name):enabledShapes.add(name); renderShapeToggles(); };
+    box.appendChild(chip);
   });
-  [player1,player2].forEach((p,idx)=>{
-    if(p.lives>0){ const x=W*(idx===0?0.3:0.35)-carSize/2; const y=roadY+(p.step*stepSize)-carSize/2;
-      ctx.fillStyle=p.color; ctx.fillRect(x,y,carSize,carSize);
+}
+document.getElementById('toggleGhost').addEventListener('change', e=>globalToggles.ghost=e.target.checked);
+document.getElementById('toggleRainbow').addEventListener('change', e=>globalToggles.rainbow=e.target.checked);
+document.getElementById('toggleMirror').addEventListener('change', e=>globalToggles.mirror=e.target.checked);
+document.getElementById('toggleChaos').addEventListener('change', e=>globalToggles.chaos=e.target.checked);
+
+const editorState = Array.from({length:4}, ()=>Array(4).fill(false));
+const editorGrid = document.getElementById('editorGrid');
+function renderEditorGrid(){
+  editorGrid.innerHTML='';
+  for (let r=0;r<4;r++) for (let c=0;c<4;c++){
+    const cell=document.createElement('div'); cell.className='editor-cell'+(editorState[r][c]?' on':'');
+    cell.onclick=()=>{ editorState[r][c]=!editorState[r][c]; renderEditorGrid(); };
+    editorGrid.appendChild(cell);
+  }
+}
+renderEditorGrid();
+document.getElementById('editorSave').addEventListener('click', () => {
+  const nameInput=document.getElementById('editorName'), colorInput=document.getElementById('editorColor');
+  let name=nameInput.value.trim().toUpperCase() || `X${Object.keys(customShapes).length+1}`;
+  if (SHAPES[name]||customShapes[name]) name+='★';
+  let cells=[]; for (let r=0;r<4;r++) for (let c=0;c<4;c++) if (editorState[r][c]) cells.push([r,c]);
+  if (cells.length===0) return;
+  const rotations=[cells]; for (let i=0;i<3;i++) rotations.push(rotateCells90(rotations[rotations.length-1]));
+  customShapes[name]={rotations, color:colorInput.value}; CONFIG.colors[name]=colorInput.value;
+  for (let r=0;r<4;r++) for (let c=0;c<4;c++) editorState[r][c]=false;
+  renderEditorGrid(); nameInput.value=''; renderCustomList();
+});
+document.getElementById('editorClear').addEventListener('click', () => {
+  for (let r=0;r<4;r++) for (let c=0;c<4;c++) editorState[r][c]=false; renderEditorGrid();
+});
+function renderCustomList(){
+  const list=document.getElementById('customList'); list.innerHTML='';
+  Object.keys(customShapes).forEach(name=>{
+    const chip=document.createElement('div'); chip.className='custom-chip';
+    chip.innerHTML=`<span class="swatch" style="width:10px;height:10px;border-radius:2px;display:inline-block;background:${customShapes[name].color}"></span>${name}`;
+    const del=document.createElement('button'); del.textContent='✕'; del.onclick=()=>{ delete customShapes[name]; renderCustomList(); };
+    chip.appendChild(del); list.appendChild(chip);
+  });
+}
+
+// --------------------------------------------------------------------------
+// Game Loop
+// --------------------------------------------------------------------------
+let lastTime = 0;
+function stepGame(g, delta){
+  if (g.paused || g.gameOver || !g.active) return;
+  const now=Date.now();
+  for (const key of Object.keys(g.tempExpiry)){
+    if (now>=g.tempExpiry[key]){
+      if (key==='speedBurst') g.tempSpeedMultiplier=1;
+      // Auch das Zurückkippen wird nur vorgemerkt, nicht sofort angewendet — greift
+      // erst in lockPiece(), zwischen zwei Steinen (siehe gravityRevertPending dort).
+      if (key==='gravityFlip') g.gravityRevertPending = true;
+      delete g.tempExpiry[key];
     }
-  });
+  }
+  if (isGrounded(g)){
+    g.lockTimer += delta;
+    if (g.lockTimer >= CONFIG.lockDelayMs){ lockPiece(g); g.lockTimer=0; }
+  } else {
+    g.lockTimer = 0; g.dropTimer += delta;
+    const base = g.dropInterval * g.tempSpeedMultiplier;
+    const effective = globalToggles.chaos ? Math.max(CONFIG.dropIntervalMin, base*(0.4+Math.random()*1.4)) : Math.max(CONFIG.dropIntervalMin, base);
+    if (g.dropTimer >= effective){ g.dropTimer=0; tryMove(g, g.gravityDir, 0); }
+  }
+  draw(g);
 }
 
-// Game loop
-function loop(){
-  frame++;
-  if(frame%spawnInterval===0) spawnObstacle();
-  updatePlayers(); updateObstacles(); checkCollisions(); draw();
-  [player1,player2].forEach((p,i)=>{
-    const time = p.lives>0 ? (Date.now()-p.start)/1000 : p.stopTime;
-    if(p.lives===0 && p.stopTime===null) p.stopTime=time;
-    const timeEl = i===0 ? score1El : score2El;
-    const livesEl = i===0 ? lives1El : lives2El;
-    timeEl.textContent = `S${i+1} Zeit: ${time.toFixed(2)}s`;
-    livesEl.textContent = `S${i+1} Leben: ${p.lives}`;
-  });
-  if(player1.lives>0||player2.lives>0) requestAnimationFrame(loop);
-  else endGame();
+function loop(time=0){
+  const delta = time - lastTime; lastTime = time;
+
+  const now = Date.now();
+  for (const key of Object.keys(globalTempExpiry)){
+    if (now>=globalTempExpiry[key]){ delete globalTempExpiry[key]; }
+  }
+  if (globalToggles.rainbow) rainbowHue = (rainbowHue + delta*0.05) % 360;
+
+  if (!menuOpen){
+    games.forEach(g => stepGame(g, delta));
+    if (randomizerIntensity !== 'off'){
+      randomizerTimer += delta;
+      if (randomizerTimer >= RANDOMIZER_INTERVALS[randomizerIntensity]){ randomizerTimer=0; triggerRandomEvent(); }
+    }
+  }
+  games.forEach(g => { if (g.active && g.gameOver && !g.gameOverHandled) handleGameOver(g); });
+
+  requestAnimationFrame(loop);
 }
 
-// Endgame
-function endGame(){
-  running = false;
-  const t1 = player1.stopTime, t2 = player2.stopTime;
-  let result;
-  if(t1>t2) result='Spieler 1 gewinnt!';
-  else if(t2>t1) result='Spieler 2 gewinnt!';
-  else result='Unentschieden!';
-  resultText.textContent = result;
-  const best = Math.max(t1,t2);
-  if(saveHighscore(best)) newHighscore.textContent = 'Neuer Highscore!';
-  endScreen.style.display='flex';
-}
+// --------------------------------------------------------------------------
+// Start
+// --------------------------------------------------------------------------
+renderHighscores();
+games.forEach(g => restartGame(g));
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
